@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 
-# import LoRaRF as lora
-from LoRaRF import SX127x
+
+from core.radioLink import radioLink
 
 
-RST_PIN: int = 22
-
-radioLink: SX127x = SX127x()
-radioLink.setPins(reset=RST_PIN)
-radioLink.begin()
+radioLnk: radioLink = radioLink()
+radioLnk.init()
 
 
 def init_lora():
