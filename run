@@ -8,6 +8,7 @@ RST_PIN: int = 22
 
 radioLink: SX127x = SX127x()
 radioLink.setPins(reset=RST_PIN)
+radioLink.begin()
 
 
 def init_lora():
