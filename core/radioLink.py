@@ -1,5 +1,6 @@
 
 # import LoRaRF as lora
+import time
 from LoRaRF import SX127x
 
 
@@ -9,6 +10,7 @@ class radioLink(object):
 
    def __init__(self):
       self.lnk: SX127x = SX127x()
+      self.lnk.setSpi(0, 0)
       self.lnk.setPins(reset=radioLink.RST_PIN)
 
    def init(self):
