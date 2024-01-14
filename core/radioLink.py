@@ -12,4 +12,5 @@ class radioLink(object):
       self.lnk.setPins(reset=radioLink.RST_PIN)
 
    def init(self):
-      self.lnk.begin()
+      begin_rval = self.lnk.begin()
+      print(f"begin_rval: {begin_rval}")
