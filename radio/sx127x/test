@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from .loraSPI import loraSPI
+from loraSPI import loraSPI
 
 bus: int = 0
 csid: int = 0
