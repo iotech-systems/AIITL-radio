@@ -6,10 +6,10 @@ from sx127x import sx127x
 bus: int = 0
 dev: int = 0
 
-spi: loraSPI = loraSPI(bus=bus, bus_dev=dev, cs_pin=8)
+spi: loraSPI = loraSPI(bus=bus, bus_dev=dev)
 print(spi.dump())
 spi.init()
 
-dev: sx127x = sx127x(spi=spi, rst_pin=22)
+dev: sx127x = sx127x(spi=spi, rst_pin=22, cs_pin=8)
 dev.init()
 dev.reset()
