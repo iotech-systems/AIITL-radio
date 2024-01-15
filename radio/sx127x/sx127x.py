@@ -5,6 +5,7 @@ if "arm" in platform.machine():
    import RPi.GPIO as GPIO
 else:
    from gpioStub import stubGPIO as GPIO
+# -- -- -- --
 from loraSPI import loraSPI
 from sx127xRegs import sx127xRegs as regs
 from sx127xConsts import sx127xConsts as consts
@@ -53,9 +54,10 @@ class sx127x(object):
       return self._transfer(address & 0x7F, 0x00)
 
    def _transfer(self, address: int, data: int) -> int:
-      buf = [address, data]
+      buff = [address, data]
       self.__set_cs(GPIO.LOW)
-      rval = self.spi.transfer(buf)
+      print(f"[ spi sending: {buff} ]")
+      rval = self.spi.transfer(buff)
       print(f"[ rval: {rval}]")
       self.__set_cs(GPIO.HIGH)
       if len(rval) == 2:
