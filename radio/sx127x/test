@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import time
 
 from loraSPI import loraSPI
 from sx127x import sx127x
@@ -12,6 +13,7 @@ spi_hz: int = 488000
 
 spi: loraSPI = loraSPI(bus=bus, bus_dev=dev, speed=spi_hz)
 print(spi.dump())
+time.sleep(4.0)
 spi.init()
 
 dev: sx127x = sx127x(spi=spi, rst_pin=22, cs_pin=8)
