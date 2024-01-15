@@ -20,7 +20,7 @@ class sx127x(object):
    def init(self):
       GPIO.setmode(GPIO.BCM)
       GPIO.setup(self.rst_pin, GPIO.OUT)
-      GPIO.setup(self.spi.dev, GPIO.OUT)
+      GPIO.setup(self.spi.cs_pin, GPIO.OUT)
       self.reset()
       self.setModem(consts.LORA_MODEM)
 
