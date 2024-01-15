@@ -20,3 +20,7 @@ class stubGPIO(object):
    @staticmethod
    def setup(pin, _dir):
       pass
+
+   @staticmethod
+   def setwarnings(val: bool):
+      pass

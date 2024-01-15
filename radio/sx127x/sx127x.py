@@ -18,6 +18,7 @@ class sx127x(object):
       self._modem: int = 0
 
    def init(self):
+      GPIO.setwarnings(False)
       GPIO.setmode(GPIO.BCM)
       GPIO.setup(self.rst_pin, GPIO.OUT)
       GPIO.setup(self.spi.cs_pin, GPIO.OUT)
