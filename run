@@ -4,9 +4,6 @@
 from core.radioLink import radioLink
 
 
-radioLnk: radioLink = radioLink()
-radioLnk.init()
-
 
 def init_lora():
    pass
