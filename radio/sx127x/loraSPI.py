@@ -5,7 +5,7 @@ import spidev, typing as t
 
 MHZ_1: int = 1000000
 # SPI_SPEED: int = 5 * MHZ_1
-SPI_SPEED: int = 1 * MHZ_1
+SPI_SPEED: int = 4 * MHZ_1
 
 
 class loraSPI(object):
