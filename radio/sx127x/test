@@ -8,4 +8,3 @@ csid: int = 0
 spi: loraSPI = loraSPI(bus, csid)
 print(spi.dump())
 spi.init()
-print(spi.dump())
