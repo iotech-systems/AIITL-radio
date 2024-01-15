@@ -8,22 +8,23 @@ SPI_SPEED_5Mhz: int = 5 * MHZ_1
 
 class loraSPI(object):
 
-   def __init__(self, bus: int, cs: int, speed: int = SPI_SPEED_5Mhz):
+   def __init__(self, bus: int, bus_dev: int, cs_pin: int = 0, speed: int = SPI_SPEED_5Mhz):
       self.bus = bus
-      self.cs = cs
+      self.dev = bus_dev
+      self.cs_pin: int = cs_pin
       self.speed = speed
       self.mode: int = 0
       self.lsbfst: bool = False
 
    def dump(self):
       spi: spidev.SpiDev = spidev.SpiDev()
-      spi.open(bus=self.bus, device=self.cs)
+      spi.open(bus=self.bus, device=self.dev)
       print(f"lsbfst: {spi.lsbfirst} | mode: {spi.mode} | hz: {spi.max_speed_hz}")
       spi.close()
 
    def init(self):
       spi: spidev.SpiDev = spidev.SpiDev()
-      spi.open(bus=self.bus, device=self.cs)
+      spi.open(bus=self.bus, device=self.dev)
       spi.max_speed_hz = self.speed
       print(f"lsbfst: {spi.lsbfirst} | mode: {spi.mode} | hz: {spi.max_speed_hz}")
       spi.close()
@@ -31,7 +32,7 @@ class loraSPI(object):
    def transfer(self, buff: t.Iterable) -> tuple:
       try:
          spi = spidev.SpiDev()
-         spi.open(self.bus, self.cs)
+         spi.open(self.bus, self.dev)
          spi.lsbfirst = self.lsbfst
          spi.mode = self.mode
          spi.max_speed_hz = self.speed

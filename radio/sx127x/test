@@ -4,9 +4,9 @@ from loraSPI import loraSPI
 from  sx127x import sx127x
 
 bus: int = 0
-cspin: int = 8
+dev: int = 0
 
-spi: loraSPI = loraSPI(bus, cspin)
+spi: loraSPI = loraSPI(bus=bus, dev,)
 print(spi.dump())
 spi.init()
 
