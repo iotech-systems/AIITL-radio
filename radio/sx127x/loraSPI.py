@@ -4,7 +4,8 @@ import spidev, typing as t
 
 
 # dev / 64
-SPI_SPEED: int = 3900000
+SPI_SPEED: int = 500000
+# SPI_SPEED: int = 3900000
 
 
 class loraSPI(object):
