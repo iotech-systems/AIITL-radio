@@ -1,3 +1,4 @@
+import time
 
 import spidev, typing as t
 
@@ -34,9 +35,13 @@ class loraSPI(object):
       try:
          spi = spidev.SpiDev()
          spi.open(self.bus, self.dev)
+         print(spi)
          spi.lsbfirst = self.lsbfst
          spi.mode = self.mode
          spi.max_speed_hz = self.speed
+         time.sleep(0.001)
+         ret = spi.xfer2(buff)
+         time.sleep(0.001)
          ret = spi.xfer2(buff)
          spi.close()
          return ret
