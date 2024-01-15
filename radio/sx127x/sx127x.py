@@ -56,6 +56,7 @@ class sx127x(object):
       buf = [address, data]
       self.__set_cs(GPIO.LOW)
       rval = self.spi.transfer(buf)
+      print(f"[ rval: {rval}]")
       self.__set_cs(GPIO.HIGH)
       if len(rval) == 2:
          return int(rval[1])
