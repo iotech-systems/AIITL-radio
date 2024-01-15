@@ -35,7 +35,7 @@ class sx127x(object):
       ver = 0x00
       while ver != 0x12 and ver != 0x22:
          ver = self.readRegister(regs.REG_VERSION)
-         if time.time() - t > 4:
+         if time.time() - t > 8:
             return False
          print(f"[ ver: {ver}]")
       return True

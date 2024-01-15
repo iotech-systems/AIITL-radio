@@ -3,12 +3,13 @@ import spidev, typing as t
 
 
 MHZ_1: int = 1000000
-SPI_SPEED_5Mhz: int = 5 * MHZ_1
+# SPI_SPEED: int = 5 * MHZ_1
+SPI_SPEED: int = 1 * MHZ_1
 
 
 class loraSPI(object):
 
-   def __init__(self, bus: int, bus_dev: int, cs_pin: int = 0, speed: int = SPI_SPEED_5Mhz):
+   def __init__(self, bus: int, bus_dev: int, cs_pin: int = 0, speed: int = SPI_SPEED):
       self.bus = bus
       self.dev = bus_dev
       self.cs_pin: int = cs_pin
