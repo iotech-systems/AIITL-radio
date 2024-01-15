@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from loraSPI import loraSPI
+from  sx127x import sx127x
 
 bus: int = 0
 csid: int = 0
@@ -8,3 +9,7 @@ csid: int = 0
 spi: loraSPI = loraSPI(bus, csid)
 print(spi.dump())
 spi.init()
+
+dev: sx127x = sx127x(spi=spi, rst_pin=22)
+dev.init()
+dev.reset()

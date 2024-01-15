@@ -12,6 +12,8 @@ class loraSPI(object):
       self.bus = bus
       self.cs = cs
       self.speed = speed
+      self.mode: int = 0
+      self.lsbfst: bool = False
 
    def dump(self):
       spi: spidev.SpiDev = spidev.SpiDev()
@@ -26,12 +28,17 @@ class loraSPI(object):
       print(f"lsbfst: {spi.lsbfirst} | mode: {spi.mode} | hz: {spi.max_speed_hz}")
       spi.close()
 
-   def transfer(self, buf: t.Iterable) -> tuple:
-      spi = spidev.SpiDev()
-      spi.open(self.bus, self.cs)
-      spi.lsbfirst = False
-      spi.mode = 0
-      spi.max_speed_hz = self.speed
-      ret = spi.xfer2(buf)
-      spi.close()
-      return ret
+   def transfer(self, buff: t.Iterable) -> tuple:
+      try:
+         spi = spidev.SpiDev()
+         spi.open(self.bus, self.cs)
+         spi.lsbfirst = self.lsbfst
+         spi.mode = self.mode
+         spi.max_speed_hz = self.speed
+         ret = spi.xfer2(buff)
+         spi.close()
+         return ret
+      except Exception as e:
+         print(e)
+      finally:
+         pass

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 
-from core.radioLink import radioLink
-
+from radio.sx127x import sx127x
 
 
 def init_lora():
