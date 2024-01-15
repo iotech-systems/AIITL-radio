@@ -5,7 +5,8 @@ from sx127x import sx127x
 
 bus: int = 0
 dev: int = 0
-spi_hz: int = 10000000
+spi_hz: int = 3900000
+
 
 spi: loraSPI = loraSPI(bus=bus, bus_dev=dev, speed=spi_hz)
 print(spi.dump())

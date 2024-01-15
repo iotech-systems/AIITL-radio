@@ -3,9 +3,8 @@ import time
 import spidev, typing as t
 
 
-MHZ_1: int = 1000000
-# SPI_SPEED: int = 5 * MHZ_1
-SPI_SPEED: int = 4 * MHZ_1
+# dev / 64
+SPI_SPEED: int = 3900000
 
 
 class loraSPI(object):
