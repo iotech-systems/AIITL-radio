@@ -6,5 +6,6 @@ bus: int = 0
 csid: int = 0
 
 spi: loraSPI = loraSPI(bus, csid)
-val: str = spi.init()
-print(val)
+print(spi.dump())
+spi.init()
+print(spi.dump())
