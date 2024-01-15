@@ -13,10 +13,16 @@ class loraSPI(object):
       self.cs = cs
       self.speed = speed
 
-   def init(self):
+   def dump(self):
       spi: spidev.SpiDev = spidev.SpiDev()
       spi.open(bus=self.bus, device=self.cs)
       print(f"lsbfst: {spi.lsbfirst} | mode: {spi.mode} | hz: {spi.max_speed_hz}")
+      spi.close()
+
+   def init(self):
+      spi: spidev.SpiDev = spidev.SpiDev()
+      spi.open(bus=self.bus, device=self.cs)
+      spi.max_speed_hz = self.speed
       spi.close()
 
    def transfer(self, buf: t.Iterable) -> tuple:
