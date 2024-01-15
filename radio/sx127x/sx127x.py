@@ -13,16 +13,17 @@ from sx127xConsts import sx127xConsts as consts
 
 class sx127x(object):
 
-   def __init__(self, spi: loraSPI, rst_pin: int):
+   def __init__(self, spi: loraSPI, rst_pin: int, cs_pin: int):
       self.spi: loraSPI = spi
       self.rst_pin: int = rst_pin
+      self.cs_pin: int = cs_pin
       self._modem: int = 0
 
    def init(self):
       GPIO.setwarnings(False)
       GPIO.setmode(GPIO.BCM)
       GPIO.setup(self.rst_pin, GPIO.OUT)
-      GPIO.setup(self.spi.cs_pin, GPIO.OUT)
+      GPIO.setup(self.cs_pin, GPIO.OUT)
       self.reset()
       self.setModem(consts.LORA_MODEM)
 
@@ -55,14 +56,14 @@ class sx127x(object):
 
    def _transfer(self, address: int, data: int) -> int:
       buff = [address, data]
-      self.__set_cs(GPIO.LOW)
       print(f"[ spi sending: {buff} ]")
+      self.__set_cs(GPIO.LOW)
       rval = self.spi.transfer(buff)
-      print(f"[ rval: {rval}]")
       self.__set_cs(GPIO.HIGH)
+      print(f"[ rval: {rval}]")
       if len(rval) == 2:
          return int(rval[1])
       return -1
 
    def __set_cs(self, val: bool):
-      GPIO.output(self.spi.cs_pin, val)
+      GPIO.output(self.cs_pin, val)
