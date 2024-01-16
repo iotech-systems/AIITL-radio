@@ -69,11 +69,11 @@ while True:
     radio.beginPacket()
     radio.write(messageList, len(messageList))
     radio.write([counter], 1)
-    radio.endPacket()
+    radio.endPacket(timeout=2)
     # Print message and counter
     print(f"{message}  {counter}")
     # Wait until modulation process for transmitting packet finish
-    radio.wait()
+    radio.wait(timeout=2)
     # Print transmit time and data rate
     print("Transmit time: {0:0.2f} ms | Data rate: {1:0.2f} byte/s"
           .format(radio.transmitTime(), radio.dataRate()))
