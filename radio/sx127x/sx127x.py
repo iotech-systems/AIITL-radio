@@ -41,7 +41,7 @@ class sx127x(object):
          ver = self.readRegister(regs.REG_VERSION)
          if time.time() - t > 4:
             return False
-         print(f"[ ver: {ver}]")
+         print(f"[ ver: {0} | hex: {1:02X} ]".format(ver, ver))
       return True
 
    def setModem(self, modem: int):
