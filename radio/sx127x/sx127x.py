@@ -22,7 +22,43 @@ class sx127x(sxBase):
       self.spi: loraSPI = spi
       self.rst_pin: int = rst_pin
       self.cs_pin: int = cs_pin
+      self.sf: int = 0
+      self._bw: int = 0
       self._modem: int = 0
+      self._headerType: int = 0
+      self._payloadTxRx: int = 0
+      self._transmitTime: int = 0
+      self._payloadLength: int = 0
+      self._frequency: float = 0.0
+      self._onReceive: callable = None
+      self._onTransmit: callable = None
+      # SPI and GPIO pin setting
+      # _irqTimeout = 10000
+      # _txState = LoRaGpio.LOW
+      # _rxState = LoRaGpio.LOW
+      # # LoRa setting
+      # _dio = 1
+      # _modem = LORA_MODEM
+      # _frequency = 915000000
+      # sf = 7
+      # _bw = 125000
+      # _cr = 5
+      # _ldro = False
+      # _headerType = HEADER_EXPLICIT
+      # _preambleLength = 12
+      # _payloadLength = 32
+      # _crcType = False
+      # _invertIq = False
+      # # Operation properties
+      # _monitoring = None
+      # _payloadTxRx = 32
+      # _statusWait = STATUS_DEFAULT
+      # _statusIrq = STATUS_DEFAULT
+      # _transmitTime = 0.0
+      # # callback functions
+      # _onTransmit = None
+      # _onReceive = None
+      # -- -- -- --
       GPIO.setup([self.rst_pin, self.cs_pin], GPIO.OUT)
 
    def init(self):
@@ -99,7 +135,7 @@ class sx127x(sxBase):
             self.setCurrentProtection(140)  # max current 140 mA
          # enable or disable +20 dBm option on PA_BOOST pin
          self.writeRegister(regs.REG_PA_DAC, paDac)
-      # set PA config
+      # -- set PA config --
       self.writeRegister(regs.REG_PA_CONFIG, paConfig | outputPower)
 
    def writeRegister(self, address: int, data: int) -> int:
@@ -147,7 +183,30 @@ class sx127x(sxBase):
       pass
 
    def status(self):
+      # set back status IRQ for RX continuous operation
+      # statusIrq = self._statusIrq
+      # if self._statusWait == self.STATUS_RX_CONTINUOUS:
+      #    self._statusIrq = 0x0000
+      # # get status for transmit and receive operation based on status IRQ
+      # if statusIrq & self.IRQ_RX_TIMEOUT:
+      #    return self.STATUS_RX_TIMEOUT
+      # elif statusIrq & self.IRQ_CRC_ERR:
+      #    return self.STATUS_CRC_ERR
+      # elif statusIrq & self.IRQ_TX_DONE:
+      #    return self.STATUS_TX_DONE
+      # elif statusIrq & self.IRQ_RX_DONE:
+      #    return self.STATUS_RX_DONE
+      # # return TX or RX wait status
+      # return self._statusWait
       pass
+
+   def onTransmit(self, callback: callable):
+      # register onTransmit function to call every transmit done
+      self._onTransmit = callback
+
+   def onReceive(self, callback: callable):
+      # register onReceive function to call every receive done
+      self._onReceive = callback
 
    def setCurrentProtection(self, current: int):
       # calculate ocp trim
@@ -156,7 +215,7 @@ class sx127x(sxBase):
          ocpTrim = int((current - 45) / 5)
       elif current <= 240:
          ocpTrim = int((current + 30) / 10)
-      # set overcurrent protection config
+      # set over-current protection config
       self.writeRegister(regs.REG_OCP, 0x20 | ocpTrim)
 
    def setOscillator(self, option: int):
@@ -169,8 +228,8 @@ class sx127x(sxBase):
       # valid RX gain level 0 - 6 (0 -> AGC on)
       level = 6 if level > 6 else level
       # boost LNA and automatic gain controller config
-      LnaBoostHf = 0x00
-      if boost: LnaBoostHf = 0x03
+      # LnaBoostHf = 0x00 # if boost:
+      LnaBoostHf = 0x03 if boost else 0x00
       AgcOn = 0x00
       if level == consts.RX_GAIN_AUTO:
          AgcOn = 0x01
@@ -178,6 +237,129 @@ class sx127x(sxBase):
       self.writeRegister(regs.REG_LNA, LnaBoostHf | (level << 5))
       # enable or disable AGC
       self.writeBits(regs.REG_MODEM_CONFIG_3, AgcOn, 2, 1)
+
+   def setLoRaModulation(self, sf: int, bw: int, cr: int, ldro: bool = False):
+      self.setSpreadingFactor(sf)
+      self.setBandwidth(bw)
+      self.setCodeRate(cr)
+      self.setLdroEnable(ldro)
+
+   def setLoRaPacket(self, headerType: int, preambleLength: int
+         , payloadLength: int, crcType: bool = False
+         , invertIq: bool = False):
+      # -- -- -- --
+      self.setHeaderType(headerType)
+      self.setPreambleLength(preambleLength)
+      self.setPayloadLength(payloadLength)
+      self.setCrcEnable(crcType)
+      # self.setInvertIq(invertIq)
+
+   def setSpreadingFactor(self, sf: int):
+      self.sf = sf
+      # valid spreading factor is 6 - 12
+      if sf < 6:
+         sf = 6
+      elif sf > 12:
+         sf = 12
+      # set appropriate signal detection optimize and threshold
+      optimize = 0x03; threshold = 0x0A
+      if sf == 6:
+         optimize = 0x05
+         threshold = 0x0C
+      self.writeRegister(regs.REG_DETECTION_OPTIMIZE, optimize)
+      self.writeRegister(regs.REG_DETECTION_THRESHOLD, threshold)
+      # set spreading factor config
+      self.writeBits(regs.REG_MODEM_CONFIG_2, sf, 4, 4)
+
+   def setBandwidth(self, bw: int):
+      self._bw = bw
+      bwCfg = 9         # 500 kHz
+      if bw < 9100:
+         bwCfg = 0      # 7.8 kHz
+      elif bw < 13000:
+         bwCfg = 1      # 10.4 kHz
+      elif bw < 18200:
+         bwCfg = 2      # 15.6 kHz
+      elif bw < 26000:
+         bwCfg = 3      # 20.8 kHz
+      elif bw < 36500:
+         bwCfg = 4      # 31.25 kHz
+      elif bw < 52100:
+         bwCfg = 5      # 41.7 kHz
+      elif bw < 93800:
+         bwCfg = 6      # 62.5 kHz
+      elif bw < 187500:
+         bwCfg = 7      # 125 kHz
+      elif bw < 375000:
+         bwCfg = 8      # 250 kHz
+      self.writeBits(regs.REG_MODEM_CONFIG_1, bwCfg, 4, 4)
+
+   def setCodeRate(self, cr: int):
+      # valid code rate denominator is 5 - 8
+      if cr < 5:
+         cr = 4
+      elif cr > 8:
+         cr = 8
+      crCfg = cr - 4
+      self.writeBits(regs.REG_MODEM_CONFIG_1, crCfg, 1, 3)
+
+   def setLdroEnable(self, ldro: bool):
+      # ldroCfg = 0x00
+      # if ldro:
+      #    ldroCfg = 0x01
+      ldroCfg = 0x01 if ldro else 0x00
+      self.writeBits(regs.REG_MODEM_CONFIG_3, ldroCfg, 3, 1)
+
+   def setHeaderType(self, headerType: int):
+      self._headerType = headerType
+      headerTypeCfg = consts.HEADER_EXPLICIT
+      if headerType == consts.HEADER_IMPLICIT:
+         headerTypeCfg = consts.HEADER_IMPLICIT
+      self.writeBits(regs.REG_MODEM_CONFIG_1, headerTypeCfg, 0, 1)
+
+   def setPreambleLength(self, preambleLength: int):
+      self.writeRegister(regs.REG_PREAMBLE_MSB, (preambleLength >> 8) & 0xFF)
+      self.writeRegister(regs.REG_PREAMBLE_LSB, preambleLength & 0xFF)
+
+   def setPayloadLength(self, payloadLength: int):
+      self._payloadLength = payloadLength
+      self.writeRegister(regs.REG_PAYLOAD_LENGTH, payloadLength)
+
+   def setCrcEnable(self, crcType: bool):
+      # crcTypeCfg = 0x00
+      # if crcType:
+      #    crcTypeCfg = 0x01
+      crcTypeCfg: int = 0x00 if crcType else 0x00
+      self.writeBits(regs.REG_MODEM_CONFIG_2, crcTypeCfg, 2, 1)
+
+   def transmitTime(self) -> float:
+      # get transmit time in millisecond (ms)
+      return self._transmitTime * 1000
+
+   # get data rate last transmitted package in kbps
+   def dataRate(self) -> float:
+      return self._payloadTxRx / self._transmitTime
+
+   # get relative signal strength index (RSSI) of last incoming package
+   def packetRssi(self) -> float:
+      offset = consts.RSSI_OFFSET_HF
+      if self._frequency < consts.BAND_THRESHOLD:
+         offset = consts.RSSI_OFFSET_LF
+      if self.readRegister(regs.REG_VERSION) == 0x22:
+         offset = consts.RSSI_OFFSET
+      return self.readRegister(regs.REG_PKT_RSSI_VALUE) - offset
+
+   def rssi(self) -> float:
+      offset = consts.RSSI_OFFSET_HF
+      if self._frequency < consts.BAND_THRESHOLD:
+         offset = consts.RSSI_OFFSET_LF
+      if self.readRegister(regs.REG_VERSION) == 0x22:
+         offset = consts.RSSI_OFFSET
+      return self.readRegister(regs.REG_RSSI_VALUE) - offset
+
+   # get signal-to-noise ratio (SNR) of last incoming package
+   def snr(self) -> float:
+      return self.readRegister(regs.REG_PKT_SNR_VALUE) / 4.0
 
    def writeBits(self, address: int, data: int, position: int, length: int):
       read = self._transfer(address & 0x7F, 0x00)

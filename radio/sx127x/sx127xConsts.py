@@ -41,3 +41,25 @@ class sx127xConsts(object):
    IRQ_CRC_ERR = 0x20            # wrong CRC received
    IRQ_RX_DONE = 0x40            # packet received
    IRQ_RX_TIMEOUT = 0x80         # waiting packet received timeout
+   # Header type
+   HEADER_EXPLICIT = 0x00        # explicit header mode
+   HEADER_IMPLICIT = 0x01        # implicit header mode
+   # Rssi offset
+   RSSI_OFFSET_LF = 164          # low band frequency RSSI offset
+   RSSI_OFFSET_HF = 157          # high band frequency RSSI offset
+   RSSI_OFFSET = 139             # frequency RSSI offset for SX1272
+   BAND_THRESHOLD = 525E6        # threshold between low and high band frequency
+   # TX and RX operation status
+   STATUS_DEFAULT = 0            # default status (false)
+   STATUS_TX_WAIT = 1
+   STATUS_TX_TIMEOUT = 2
+   STATUS_TX_DONE = 3
+   STATUS_RX_WAIT = 4
+   STATUS_RX_CONTINUOUS = 5
+   STATUS_RX_TIMEOUT = 6
+   STATUS_RX_DONE = 7
+   STATUS_HEADER_ERR = 8
+   STATUS_CRC_ERR = 9
+   STATUS_CAD_WAIT = 10
+   STATUS_CAD_DETECTED = 11
+   STATUS_CAD_DONE = 12
