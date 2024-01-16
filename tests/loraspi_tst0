@@ -4,5 +4,13 @@ import os, sys, spidev
 from radio.sx127x.loraSPI import loraSPI
 
 
-loraspi: loraSPI = loraSPI()
+thispy, _bid, _bdev, _hz = sys.argv
+print(thispy)
+
+bid: int = int(_bid)
+bdev: int = int(_bdev)
+hz: int = int(_hz)
+
+
+loraspi: loraSPI = loraSPI(bus=bid, bus_dev=bdev, speed=hz)
 print(dir(loraspi))

@@ -1,5 +1,5 @@
-import time
 
+import time
 import spidev, typing as t
 
 
