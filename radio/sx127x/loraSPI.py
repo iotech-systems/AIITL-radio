@@ -13,13 +13,13 @@ class loraSPI(object):
    def __init__(self, bus: int = 0, bus_dev: int = 0, speed: int = SPI_SPEED):
       self.bus = bus
       self.dev = bus_dev
-      # self.cs_pin: int = cs_pin
       self.speed = speed
       self.mode: int = 0
       self.lsbfst: bool = False
 
    def dump(self):
       spi: spidev.SpiDev = spidev.SpiDev()
+      spi.max_speed_hz = self.speed
       spi.open(bus=self.bus, device=self.dev)
       print(f"lsbfst: {spi.lsbfirst} | mode: {spi.mode} | hz: {spi.max_speed_hz}")
       spi.close()
