@@ -9,7 +9,7 @@ dev: int = 0
 # spi_hz: int = 3900000
 # spi_hz: int = 7800000
 # spi_hz: int = 488000
-spi_hz: int = 8000000
+spi_hz: int = 3900000
 
 
 spi: loraSPI = loraSPI(bus=bus, bus_dev=dev, speed=spi_hz)
