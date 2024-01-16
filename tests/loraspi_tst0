@@ -5,4 +5,4 @@ from radio.sx127x.loraSPI import loraSPI
 
 
 loraspi: loraSPI = loraSPI()
-dir(loraspi)
+print(dir(loraspi))
