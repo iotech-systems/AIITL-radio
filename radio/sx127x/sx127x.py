@@ -6,9 +6,9 @@ if "arm" in platform.machine():
 else:
    from gpioStub import stubGPIO as GPIO
 # -- -- -- --
-from loraSPI import loraSPI
-from sx127xRegs import sx127xRegs as regs
-from sx127xConsts import sx127xConsts as consts
+from .loraSPI import loraSPI
+from .sx127xRegs import sx127xRegs as regs
+from .sx127xConsts import sx127xConsts as consts
 
 
 GPIO.setwarnings(False)
