@@ -21,4 +21,5 @@ radio.reset()
 v: str = radio.chip_ver()
 print(f"v: {v}")
 # -- init --
-radio.init()
+begin_rval: bool = radio.begin()
+print(begin_rval)
