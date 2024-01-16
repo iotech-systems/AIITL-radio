@@ -4,7 +4,7 @@ import os, sys
 pp = os.environ.get("PYTHONPATH")
 print(f"pp: {pp}")
 from radio.sx127x.loraSPI import loraSPI
-from radio.sx127x.sx127x import sx127x
+# from radio.sx127x.sx127x import sx127x
 
 thispy, _bid, _bdev, _hz = sys.argv
 print(f"\n[{thispy}]\n")
@@ -16,5 +16,5 @@ b_hz: int = int(_hz)
 loraspi: loraSPI = loraSPI(bus=b_id, bus_dev=b_dev, bus_hz=b_hz)
 print(dir(loraspi))
 
-radio: sx127x = sx127x(spi=loraspi, rst_pin=22, cs_pin=8)
-radio.reset()
+# radio: sx127x = sx127x(spi=loraspi, rst_pin=22, cs_pin=8)
+# radio.reset()
