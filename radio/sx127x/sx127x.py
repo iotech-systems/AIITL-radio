@@ -26,7 +26,8 @@ class sx127x(object):
 
    def init(self):
       self.reset()
-      # self.setModem(consts.LORA_MODEM)
+      self.setModem(consts.LORA_MODEM)
+
 
    def reset(self):
       GPIO.output(self.rst_pin, GPIO.LOW)
@@ -45,14 +46,16 @@ class sx127x(object):
       return True
 
    def setModem(self, modem: int):
+      print("[ setModem ]")
       if modem != consts.LORA_MODEM:
          raise f"BadModemSetting: {modem}"
       self._modem = consts.LONG_RANGE_MODE
-      time.sleep(0.001)
-      self.writeRegister(regs.REG_OP_MODE, self._modem | consts.MODE_STDBY)
+      time.sleep(0.002)
+      val = self.writeRegister(regs.REG_OP_MODE, self._modem | consts.MODE_STDBY)
+      print(val)
 
-   def writeRegister(self, address: int, data: int):
-      self._transfer(address | 0x80, data)
+   def writeRegister(self, address: int, data: int) -> int:
+      return self._transfer(address | 0x80, data)
 
    def readRegister(self, address: int) -> int:
       return self._transfer(address & 0x7F, 0x00)
