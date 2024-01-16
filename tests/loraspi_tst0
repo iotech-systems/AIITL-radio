@@ -20,3 +20,5 @@ radio: sx127x = sx127x(spi=loraspi, rst_pin=22, cs_pin=8)
 radio.reset()
 v: str = radio.chip_ver()
 print(f"v: {v}")
+# -- init --
+radio.init()
