@@ -422,3 +422,10 @@ class sx127x(sxBase):
       mask = (0xFF >> (8 - length)) << position
       write = (data << position) | (read & ~mask)
       self._transfer(address | 0x80, write)
+
+   # keep compatibility between 1 and 2 bytes synchronize word
+   def setSyncWord(self, syncWord: int):
+      sw = syncWord
+      if syncWord > 0xFF:
+         sw = ((syncWord >> 8) & 0xF0) | (syncWord & 0x0F)
+      self.writeRegister(regs.REG_SYNC_WORD, sw)
