@@ -30,16 +30,16 @@ class sx127x(object):
 
    def reset(self):
       GPIO.output(self.rst_pin, GPIO.LOW)
-      time.sleep(0.001)
+      time.sleep(0.004)
       GPIO.output(self.rst_pin, GPIO.HIGH)
-      time.sleep(0.005)
+      time.sleep(0.0016)
 
    def chip_ver(self):
       ver = 0x00
       t = time.time()
       while ver != 0x12 and ver != 0x22:
          ver = self.readRegister(regs.REG_VERSION)
-         if time.time() - t > 4:
+         if time.time() - t > 8:
             return False
          print(f"[ ver: {ver} | hex: 0x{ver:02X} ]")
       return True
