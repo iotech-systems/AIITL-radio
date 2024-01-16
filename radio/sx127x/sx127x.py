@@ -350,8 +350,8 @@ class sx127x(sxBase):
       self.writeRegister(regs.REG_FRF_MID, (frf >> 8) & 0xFF)
       self.writeRegister(regs.REG_FRF_LSB, frf & 0xFF)
 
+   # valid code rate denominator is 5 - 8
    def setCodeRate(self, cr: int):
-      # valid code rate denominator is 5 - 8
       if cr < 5:
          cr = 4
       elif cr > 8:
