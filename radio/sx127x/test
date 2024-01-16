@@ -9,12 +9,12 @@ dev: int = 0
 # spi_hz: int = 3900000
 # spi_hz: int = 7800000
 # spi_hz: int = 488000
-spi_hz: int = 3900000
+spi_hz: int = 7800000
 
 
 spi: loraSPI = loraSPI(bus=bus, bus_dev=dev, speed=spi_hz)
 print(spi.dump())
-time.sleep(4.0)
+time.sleep(8.0)
 spi.init()
 
 dev: sx127x = sx127x(spi=spi, rst_pin=22, cs_pin=8)
