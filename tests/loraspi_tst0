@@ -4,7 +4,7 @@ import os, sys
 pp = os.environ.get("PYTHONPATH")
 print(f"pp: {pp}")
 from radio.sx127x.loraSPI import loraSPI
-# from radio.sx127x.sx127x import sx127x
+from radio.sx127x.sx127x import sx127x
 
 thispy, _bid, _bdev, _hz = sys.argv
 print(f"\n[{thispy}]\n")
