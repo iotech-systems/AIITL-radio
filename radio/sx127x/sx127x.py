@@ -158,11 +158,41 @@ class sx127x(sxBase):
    def end(self):
       pass
 
+   # reset TX buffer base address, FIFO address pointer and payload length
    def beginPacket(self):
-      pass
+      self._payloadTxRx = 0
+      self.writeRegister(regs.REG_FIFO_TX_BASE_ADDR, self.readRegister(regs.REG_FIFO_ADDR_PTR))
+      # save current txen and rxen pin state and set txen pin to high and rxen pin to low
+      if self._txen is not None and self._rxen is not None:
+         # self._txState = self._txen.input()
+         # self._rxState = self._rxen.input()
+         # self._txen.output(LoRaGpio.HIGH)
+         # self._rxen.output(LoRaGpio.LOW)
+         pass
 
    def endPacket(self, timeout: int) -> bool:
-      pass
+      # skip to enter TX mode when previous TX operation incomplete
+      if self.readRegister(regs.REG_OP_MODE) & 0x07 == consts.MODE_TX:
+         return False
+      # clear IRQ flag from last TX or RX operation
+      self.writeRegister(regs.REG_IRQ_FLAGS, 0xFF)
+      # set packet payload length
+      self.writeRegister(regs.REG_PAYLOAD_LENGTH, self._payloadTxRx)
+      # set status to TX wait
+      self._statusWait = consts.STATUS_TX_WAIT
+      self._statusIrq = 0x00
+      # set device to transmit mode
+      self.writeRegister(regs.REG_OP_MODE, self._modem | consts.MODE_TX)
+      self._transmitTime = time.time()
+      # set TX done interrupt on DIO0 and attach TX interrupt handler
+      if self._irq is not None:
+         self.writeRegister(regs.REG_DIO_MAPPING_1, consts.DIO0_TX_DONE)
+         # if isinstance(self._monitoring, Thread):
+         #    self._monitoring.join()
+         # to = self._irqTimeout / 1000 if timeout == 0 else timeout / 1000
+         # self._monitoring = Thread(target=self._irq.monitor, args=(self._interruptTx, to))
+         # self._monitoring.start()
+      return True
 
    def write(self, data, length: int):
       pass
