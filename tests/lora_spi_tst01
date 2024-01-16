@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, sys
+import os, sys, time
 # pp = os.environ.get("PYTHONPATH")
 # print(f"pp: {pp}")
 from radio.sx127x.sx127xConsts import sx127xConsts as consts
@@ -40,3 +40,43 @@ print("Set modulation parameters:\n\tSpreading factor = 7\n\tBandwidth = 125 kHz
 radio.setSpreadingFactor(7)     # LoRa spreading factor: 7
 radio.setBandwidth(125000)      # Bandwidth: 125 kHz
 radio.setCodeRate(5)            # Coding rate: 4/5
+
+# print("Set packet parameters:\n\tExplicit header type\
+#    \n\tPreamble length = 12\n\tPayload Length = 15\n\tCRC on")
+
+radio.setHeaderType(consts.HEADER_EXPLICIT)     # Explicit header mode
+radio.setPreambleLength(12)                     # Set preamble length to 12
+radio.setPayloadLength(15)                      # Initialize payloadLength to 15
+radio.setCrcEnable(True)                        # Set CRC enable
+
+# Set syncronize word for public network (0x34)
+print("Set syncronize word to 0x34")
+radio.setSyncWord(0x34)
+
+print("\n-- LoRa Transmitter --\n")
+
+# Message to transmit
+message = "HeLoRa World!\0"
+messageList = list(message)
+for i in range(len(messageList)):
+   messageList[i] = ord(messageList[i])
+counter = 0
+
+# Transmit message continuously
+while True:
+    # Transmit message and counter
+    # write() method must be placed between beginPacket() and endPacket()
+    radio.beginPacket()
+    radio.write(messageList, len(messageList))
+    radio.write([counter], 1)
+    radio.endPacket()
+    # Print message and counter
+    print(f"{message}  {counter}")
+    # Wait until modulation process for transmitting packet finish
+    radio.wait()
+    # Print transmit time and data rate
+    print("Transmit time: {0:0.2f} ms | Data rate: {1:0.2f} byte/s"
+          .format(radio.transmitTime(), radio.dataRate()))
+    # Don't load RF module with continous transmit
+    time.sleep(5)
+    counter = (counter + 1) % 256

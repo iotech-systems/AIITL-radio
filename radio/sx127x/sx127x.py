@@ -22,14 +22,18 @@ class sx127x(sxBase):
       self.spi: loraSPI = spi
       self.rst_pin: int = rst_pin
       self.cs_pin: int = cs_pin
-      self.sf: int = 0
-      self._bw: int = 0
-      self._modem: int = 0
+      # -- pins in org. code --
+      self._txen = None
+      self._rxen = None
+      self.sf: int = 7
+      self._bw: int = 125000
+      self._irq: int = 0
+      self._modem: int = consts.LORA_MODEM
       self._headerType: int = 0
       self._payloadTxRx: int = 0
       self._transmitTime: int = 0
       self._payloadLength: int = 0
-      self._frequency: float = 0.0
+      self._frequency: int = 433000000
       self._onReceive: callable = None
       self._onTransmit: callable = None
       # SPI and GPIO pin setting
@@ -38,10 +42,6 @@ class sx127x(sxBase):
       # _rxState = LoRaGpio.LOW
       # # LoRa setting
       # _dio = 1
-      # _modem = LORA_MODEM
-      # _frequency = 915000000
-      # sf = 7
-      # _bw = 125000
       # _cr = 5
       # _ldro = False
       # _headerType = HEADER_EXPLICIT
@@ -52,12 +52,9 @@ class sx127x(sxBase):
       # # Operation properties
       # _monitoring = None
       # _payloadTxRx = 32
-      # _statusWait = STATUS_DEFAULT
-      # _statusIrq = STATUS_DEFAULT
+      self._statusWait = consts.STATUS_DEFAULT
+      self._statusIrq = consts.STATUS_DEFAULT
       # _transmitTime = 0.0
-      # # callback functions
-      # _onTransmit = None
-      # _onReceive = None
       # -- -- -- --
       GPIO.setup([self.rst_pin, self.cs_pin], GPIO.OUT)
 
@@ -180,7 +177,58 @@ class sx127x(sxBase):
       pass
 
    def wait(self, timeout: int) -> bool:
-      pass
+      # immediately return when currently not waiting
+      # transmit or receive process
+      if self._statusIrq:
+         return True
+      # wait transmit or receive process finish by checking
+      # interrupt status or IRQ status
+      irqFlag = 0x00
+      irqFlagMask = consts.IRQ_RX_DONE | consts.IRQ_RX_TIMEOUT | consts.IRQ_CRC_ERR
+      if self._statusWait == consts.STATUS_TX_WAIT:
+         irqFlagMask = consts.IRQ_TX_DONE
+      t = time.time()
+      # -- -- -- --
+      while not (irqFlag & irqFlagMask) and self._statusIrq == 0x00:
+         # only check IRQ status register for non interrupt operation
+         if self._irq is None:
+            irqFlag = self.readRegister(regs.REG_IRQ_FLAGS)
+         # return when timeout reached
+         if time.time() - t > timeout > 0:
+            return False
+      # -- -- -- --
+      if self._statusIrq:
+         # immediately return when interrupt signal hit
+         return True
+      elif self._statusWait == consts.STATUS_TX_WAIT:
+         # calculate transmit time and set back txen and rxen pin to previous state
+         self._transmitTime = time.time() - self._transmitTime
+         # if self._txen != None and self._rxen != None:
+         #    self._txen.output(self._txState)
+         #    self._rxen.output(self._rxState)
+      elif self._statusWait == consts.STATUS_RX_WAIT:
+         # terminate receive mode by setting mode to standby
+         self.standby()
+         # set pointer to RX buffer base address and get packet payload length
+         self.writeRegister(regs.REG_FIFO_ADDR_PTR, self.readRegister(regs.REG_FIFO_RX_CURRENT_ADDR))
+         self._payloadTxRx = self.readRegister(regs.REG_RX_NB_BYTES)
+         # set back txen and rxen pin to previous state
+         if self._txen is not None and self._rxen is not None:
+            # self._txen.output(self._txState)
+            # self._rxen.output(self._rxState)
+            pass
+      elif self._statusWait == consts.STATUS_RX_CONTINUOUS:
+         # set pointer to RX buffer base address and get packet payload length
+         self.writeRegister(regs.REG_FIFO_ADDR_PTR, self.readRegister(regs.REG_FIFO_RX_CURRENT_ADDR))
+         self._payloadTxRx = self.readRegister(regs.REG_RX_NB_BYTES)
+         # clear IRQ flag
+         self.writeRegister(regs.REG_IRQ_FLAGS, 0xFF)
+      # store IRQ status
+      self._statusIrq = irqFlag
+      return True
+
+   def standby(self):
+      self.writeRegister(regs.REG_OP_MODE, self._modem | consts.MODE_STDBY)
 
    def status(self):
       # set back status IRQ for RX continuous operation
