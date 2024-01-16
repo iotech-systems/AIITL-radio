@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, sys, spidev
+import os, sys
 from radio.sx127x.loraSPI import loraSPI
 from radio.sx127x.sx127x import sx127x
 
@@ -10,7 +10,6 @@ print(f"\n[{thispy}]\n")
 b_id: int = int(_bid)
 b_dev: int = int(_bdev)
 b_hz: int = int(_hz)
-
 
 loraspi: loraSPI = loraSPI(bus=b_id, bus_dev=b_dev, bus_hz=b_hz)
 print(dir(loraspi))
