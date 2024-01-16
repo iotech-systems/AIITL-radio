@@ -18,8 +18,8 @@ class loraSPI(object):
 
    def dump(self):
       spi: spidev.SpiDev = spidev.SpiDev()
-      spi.max_speed_hz = self.speed
       spi.open(bus=self.bus, device=self.dev)
+      spi.max_speed_hz = self.speed
       print(f"lsbfst: {spi.lsbfirst} | mode: {spi.mode} | hz: {spi.max_speed_hz}")
       spi.close()
 
