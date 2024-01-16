@@ -34,9 +34,9 @@ class loraSPI(object):
       spi = spidev.SpiDev()
       try:
          spi.open(self.bus, self.dev)
+         spi.max_speed_hz = self.speed
          spi.lsbfirst = self.lsbfst
          spi.mode = self.mode
-         spi.max_speed_hz = self.speed
          ret = spi.xfer2(buff)
          return ret
       except Exception as e:
