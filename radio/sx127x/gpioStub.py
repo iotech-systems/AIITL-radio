@@ -1,6 +1,5 @@
 
 
-
 class stubGPIO(object):
 
    LOW = 0

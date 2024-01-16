@@ -1,8 +1,6 @@
-
-import RPi.GPIO as GPIO
-import time, threading as th
+import time
 from typing import Optional
-from .base import LoRaSpi, LoRaGpio, BaseLoRa
+from radio.old.base import LoRaSpi, LoRaGpio, BaseLoRa
 
 
 class SX127x(BaseLoRa):
