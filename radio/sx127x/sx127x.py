@@ -61,7 +61,6 @@ class sx127x(object):
       buff_arr = [address, data]
       print(f"[ spi sending: {buff_arr} ]")
       self.__set_cs(GPIO.LOW)
-      self.spi.xtfr2(buff_arr)
       rval: () = self.spi.xtfr2(buff_arr)
       self.__set_cs(GPIO.HIGH)
       print(f"[ rval: {rval}]")
