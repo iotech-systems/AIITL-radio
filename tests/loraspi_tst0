@@ -2,7 +2,7 @@
 
 import os, sys, spidev
 from radio.sx127x.loraSPI import loraSPI
-
+from radio.sx127x.sx127x import sx127x
 
 thispy, _bid, _bdev, _hz = sys.argv
 print(f"\n[{thispy}]\n")
@@ -12,6 +12,8 @@ b_dev: int = int(_bdev)
 b_hz: int = int(_hz)
 
 
-loraspi: loraSPI = loraSPI(pin_rst=22, pin_cs=8, bus=b_id, bus_dev=b_dev, speed=b_hz)
+loraspi: loraSPI = loraSPI(bus=b_id, bus_dev=b_dev, bus_hz=b_hz)
 print(dir(loraspi))
-loraspi.rst()
+
+radio: sx127x = sx127x(spi=loraspi, rst_pin=22, cs_pin=8)
+radio.reset()
