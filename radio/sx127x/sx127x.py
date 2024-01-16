@@ -294,6 +294,14 @@ class sx127x(sxBase):
          bwCfg = 8      # 250 kHz
       self.writeBits(regs.REG_MODEM_CONFIG_1, bwCfg, 4, 4)
 
+   def setFrequency(self, frequency: int):
+      self._frequency = frequency
+      # calculate frequency
+      frf = int((frequency << 19) / 32000000)
+      self.writeRegister(regs.REG_FRF_MSB, (frf >> 16) & 0xFF)
+      self.writeRegister(regs.REG_FRF_MID, (frf >> 8) & 0xFF)
+      self.writeRegister(regs.REG_FRF_LSB, frf & 0xFF)
+
    def setCodeRate(self, cr: int):
       # valid code rate denominator is 5 - 8
       if cr < 5:

@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+
+import os, sys
+# pp = os.environ.get("PYTHONPATH")
+# print(f"pp: {pp}")
+from radio.sx127x.sx127xConsts import sx127xConsts as consts
+from radio.sx127x.loraSPI import loraSPI
+from radio.sx127x.sx127x import sx127x
+
+thispy, _bid, _bdev, _hz = sys.argv
+print(f"\n[{thispy}]\n")
+
+b_id: int = int(_bid)
+b_dev: int = int(_bdev)
+b_hz: int = int(_hz)
+
+loraspi: loraSPI = loraSPI(bus=b_id, bus_dev=b_dev, bus_hz=b_hz)
+print(dir(loraspi))
+
+radio: sx127x = sx127x(spi=loraspi, rst_pin=22, cs_pin=8)
+radio.reset()
+v: str = radio.chip_ver()
+print(f"v: {v}")
+# -- init --
+begin_rval: bool = radio.begin()
+print(begin_rval)
+
+# Set frequency to 915 Mhz
+print("Set frequency to 915 Mhz")
+radio.setFrequency(433000000)
+
+# Set TX power, this function will set PA config with optimal setting for requested TX power
+print("Set TX power to +17 dBm")
+radio.setTxPower(17, consts.TX_POWER_PA_BOOST)  # TX power +17 dBm using PA boost pin
+
+# Configure modulation parameter including spreading factor (SF), bandwidth (BW), and coding rate (CR)
+# Receiver must have same SF and BW setting with transmitter to be able to receive LoRa packet
+print("Set modulation parameters:\n\tSpreading factor = 7\n\tBandwidth = 125 kHz\n\tCoding rate = 4/5")
+radio.setSpreadingFactor(7)     # LoRa spreading factor: 7
+radio.setBandwidth(125000)      # Bandwidth: 125 kHz
+radio.setCodeRate(5)            # Coding rate: 4/5
