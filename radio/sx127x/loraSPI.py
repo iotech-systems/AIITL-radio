@@ -7,7 +7,7 @@ from core.utils import utils
 SPI_SPEED: int = 3_900_000
 
 
-class loraSPI(spidev.SpiDev):
+class loraSPI(object):
 
    def __init__(self, bus: int = 0, bus_dev: int = 0
          , bus_hz: int = SPI_SPEED, keep_open: bool = False):
@@ -18,6 +18,7 @@ class loraSPI(spidev.SpiDev):
          self.bus_hz = bus_hz
          self.mode: int = 0
          self.lsbfst: bool = False
+         self.sysspi: spidev.SpiDev = spidev.SpiDev()
          # -- not used yet --
          self.keep_open: bool = keep_open
          self.is_opened: bool = False
@@ -27,29 +28,30 @@ class loraSPI(spidev.SpiDev):
          pass
 
    def dump(self):
-      self.open(bus=self.bus, device=self.bus_dev)
-      self.max_speed_hz = self.bus_hz
-      print(f"lsbfst: {self.lsbfirst} | mode: {self.mode} | hz: {self.max_speed_hz}")
-      self.close()
+      self.sysspi.open(bus=self.bus, device=self.bus_dev)
+      self.sysspi.max_speed_hz = self.bus_hz
+      print(f"lsbfst: {self.sysspi.lsbfirst} | mode: {self.mode} "
+         f"| hz: {self.max_speed_hz}")
+      self.sysspi.close()
 
    def init(self):
-      self.open(bus=self.bus, device=self.bus_dev)
+      self.sysspi.open(bus=self.bus, device=self.bus_dev)
       self.max_speed_hz = self.bus_hz
-      print((f"lsbfst: {self.lsbfirst} | mode: {self.mode} "
+      print((f"lsbfst: {self.sysspi.lsbfirst} | mode: {self.mode} "
          f"| hz: {self.max_speed_hz}"))
-      self.close()
+      self.sysspi.close()
 
    def xtfr2(self, buff: t.Iterable) -> tuple:
       try:
-         self.open(bus=self.bus, device=self.bus_dev)
-         self.max_speed_hz = self.bus_hz
-         self.lsbfirst = self.lsbfst
-         self.mode = self.mode
-         return self.xfer2(buff)
+         self.sysspi.open(bus=self.bus, device=self.bus_dev)
+         self.sysspi.max_speed_hz = self.bus_hz
+         self.sysspi.lsbfirst = self.lsbfst
+         self.sysspi.mode = self.mode
+         return self.sysspi.xfer2(buff)
       except Exception as e:
          utils.log_err(e)
       finally:
          try:
-            self.close()
+            self.sysspi.close()
          finally:
             pass
