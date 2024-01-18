@@ -18,10 +18,17 @@ class sxcli(object):
    def __init__(self):
       self.lora_spi: loraSPI = t.Any
       # self._sx127x: sx127x = sx127x()
+      # self.methods: {} = {"set_spi": None, "read_reg": None, "write_reg": None}
 
+   #
+   # -- read reg --
+   #
    def read_reg(self):
       print("read_reg")
 
+   #
+   # -- cls input --
+   #
    def cls(self, tks: [] = None):
       os.system("clear")
 
@@ -35,7 +42,6 @@ class sxcli(object):
          return 1
       # -- -- -- --
       bid, bdev, bhz = tks
-      # print([bid, bdev, bhz])
       self.lora_spi \
          = loraSPI(bus=int(bid), bus_dev=int(bdev), bus_hz=int(bhz))
       self.lora_spi.init()
@@ -63,6 +69,10 @@ class sxcli(object):
          pass
 
 
+#
+# -- entry point calls --
+#
+
 def run_cmd(buff: str):
    if buff == ".q":
       print("\n[ .q : exit ]\n")
@@ -81,7 +91,7 @@ def main():
    # -- -- -- --
    def __loop():
       try:
-         msg: str = f"\n[ sxcli: ver.: {VER} ]\n"
+         msg: str = f"\n[ sxcli | ver.: {VER} ]\n"
          print(colored(msg, color=TCOLORS.light_blue.name))
          _input = input("xscli: ").strip()
          if _input in arrows:
