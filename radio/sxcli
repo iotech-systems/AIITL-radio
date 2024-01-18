@@ -8,7 +8,7 @@ from radio.sx127x.loraSPI import loraSPI
 # from radio.sx127x.sx127x import sx127x
 
 
-VER: str = "2021.01.001"
+VER: str = "2024.01.18.01"
 
 
 class sxcli(object):
@@ -40,7 +40,6 @@ class sxcli(object):
    #
    # -- -- runner -- --
    #
-
    def run(self, tokens: []):
       try:
          cmd_call_name: str = str(tokens[0]).strip()
