@@ -72,14 +72,16 @@ def run_cmd(buff: str):
 
 # -- -- main loop -- --
 def main():
+   # -- -- -- --
    cmd_hist: [] = []
+   arrows: [] = ["^[[A", "^[[B"]
+   # -- -- -- --
    def __loop():
       try:
          print(f"\n[ sxcli: ver.: {VER} ]\n")
          _input = input("xscli: ").strip()
-         print(bytes(_input, "utf-8"))
-         if len(_input) == 1:
-            print(ord(_input))
+         if _input in arrows:
+            # sys.stdin.write()
             return
          # -- -- -- --
          run_cmd(_input)
@@ -89,6 +91,7 @@ def main():
    # -- -- -- --
    while True:
      __loop()
+   # -- -- -- --
 
 
 # -- -- entry point -- --
