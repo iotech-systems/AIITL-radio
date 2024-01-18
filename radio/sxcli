@@ -35,7 +35,7 @@ class sxcli(object):
          return 1
       # -- -- -- --
       bid, bdev, bhz = tks
-      print([bid, bdev, bhz])
+      # print([bid, bdev, bhz])
       self.lora_spi \
          = loraSPI(bus=int(bid), bus_dev=int(bdev), bus_hz=int(bhz))
       self.lora_spi.init()
