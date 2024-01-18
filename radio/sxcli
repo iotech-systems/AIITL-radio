@@ -38,6 +38,9 @@ class sxcli(object):
          = loraSPI(bus=int(bid), bus_dev=int(bdev), bus_hz=int(bhz))
       self.lora_spi.init()
       print(f"SPI.init: {self.lora_spi.init_code}")
+      b, d = self.lora_spi.bus, self.lora_spi.bus_dev
+      buff = os.popen(f"spi-config -d /dev/spidev{b}.{d} -q").read()
+      print(buff)
 
    #
    # -- -- runner -- --
