@@ -72,10 +72,17 @@ def run_cmd(buff: str):
 
 # -- -- main loop -- --
 def main():
+   cmd_hist: [] = []
    def __loop():
       try:
          print(f"\n[ sxcli: ver.: {VER} ]\n")
-         run_cmd(input("xscli: ").strip())
+         _input = input("xscli: ").strip()
+         if len(_input) == 1:
+            print(ord(_input))
+            return
+         # -- -- -- --
+         run_cmd(_input)
+         cmd_hist.append(_input)
       except Exception as e:
          print(e)
    # -- -- -- --
