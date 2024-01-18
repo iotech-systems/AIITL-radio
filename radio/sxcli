@@ -68,6 +68,7 @@ def run_cmd(buff: str):
       print("\n[ .q : exit ]\n")
       exit(0)
    # -- run command --
+   print(colored(f">> {buff} <<", color=TCOLORS.green.name))
    _sxcli: sxcli = sxcli()
    _sxcli.run(buff.split(" "))
 
@@ -84,7 +85,6 @@ def main():
          print(colored(msg, color=TCOLORS.light_blue.name))
          _input = input("xscli: ").strip()
          if _input in arrows:
-            # sys.stdin.write()
             return
          # -- -- -- --
          run_cmd(_input)
