@@ -36,6 +36,8 @@ class sxcli(object):
       print([bid, bdev, bhz])
       self.lora_spi \
          = loraSPI(bus=int(bid), bus_dev=int(bdev), bus_hz=int(bhz))
+      self.lora_spi.init()
+      print(f"SPI.init: {self.lora_spi.init_code}")
 
    #
    # -- -- runner -- --

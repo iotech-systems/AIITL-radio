@@ -19,6 +19,7 @@ class loraSPI(object):
          self.mode: int = 0
          self.lsbfst: bool = False
          self.sysspi: spidev.SpiDev = spidev.SpiDev()
+         self.init_code: bool = False
          # -- not used yet --
          self.keep_open: bool = keep_open
          self.is_opened: bool = False
@@ -30,16 +31,23 @@ class loraSPI(object):
    def dump(self):
       self.sysspi.open(bus=self.bus, device=self.bus_dev)
       self.sysspi.max_speed_hz = self.bus_hz
-      print(f"lsbfst: {self.sysspi.lsbfirst} | mode: {self.mode} "
-         f"| hz: {self.max_speed_hz}")
+      print(f"lsbfst: {self.sysspi.lsbfirst} | mode: {self.sysspi.mode} "
+         f"| hz: {self.sysspi.max_speed_hz}")
       self.sysspi.close()
 
    def init(self):
-      self.sysspi.open(bus=self.bus, device=self.bus_dev)
-      self.max_speed_hz = self.bus_hz
-      print((f"lsbfst: {self.sysspi.lsbfirst} | mode: {self.mode} "
-         f"| hz: {self.max_speed_hz}"))
-      self.sysspi.close()
+      try:
+         self.sysspi.open(bus=self.bus, device=self.bus_dev)
+         self.sysspi.max_speed_hz = self.bus_hz
+         print((f"lsbfst: {self.sysspi.lsbfirst} | mode: {self.sysspi.mode} "
+            f"| hz: {self.sysspi.max_speed_hz}"))
+         self.sysspi.close()
+         self.init_code = True
+      except Exception as e:
+         utils.log_err(e)
+         self.init_code = False
+      finally:
+         pass
 
    def xtfr2(self, buff: t.Iterable) -> tuple:
       try:
