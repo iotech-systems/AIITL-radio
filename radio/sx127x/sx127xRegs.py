@@ -1,6 +1,7 @@
 
 
 class sx127xRegs(object):
+
    # SX127X LoRa Mode Register Map
    REG_FIFO = 0x00
    REG_OP_MODE = 0x01
@@ -61,3 +62,23 @@ class sx127xRegs(object):
    REG_AGC_THRESH_2 = 0x63
    REG_AGC_THRESH_3 = 0x64
    REG_PLL = 0x70
+
+   def __init__(self):
+      pass
+
+   def writeReg(self, address: int, data: int) -> int:
+      return self._transfer(address | 0x80, data)
+
+   def readReg(self, address: int) -> int:
+      return self._transfer(address & 0x7F, 0x00)
+
+   def _transfer(self, address: int, data: int) -> int:
+      buff_arr = [address, data]
+      print(f"[ spi sending: {buff_arr} ]")
+      self.__set_cs_low()
+      rval: () = self.spi.xtfr2(buff_arr)
+      self.__set_cs_high()
+      print(f"[ rval: {rval}]")
+      if len(rval) == 2:
+         return int(rval[1])
+      return -1

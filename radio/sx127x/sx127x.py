@@ -1,5 +1,6 @@
 
 import os
+import typing as t
 import time, platform
 if "arm" in platform.machine():
    import RPi.GPIO as GPIO
@@ -8,17 +9,23 @@ else:
 # -- -- -- --
 from .sxBase import sxBase
 from .loraSPI import loraSPI
-from .sx127xRegs import sx127xRegs as regs
-from .sx127xConsts import sx127xConsts as consts
+from .sx127xRegs import sx127xRegs
+from .sx127xConsts import sx127xConsts as xc
+from .sx127xRecOps import sx127xRecOps
+from .sx127xConfOps import sx127xConfOps
 
 
+RF_FREQ: int = 433_000_000
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 
 
-class sx127x(sxBase):
+class sx127x(sxBase, sx127xRecOps):
 
    def __init__(self, spi: loraSPI, rst_pin: int, cs_pin: int):
+      # -- -- call supers -- --
+      super(sx127xRecOps, self).__init__()
+      # regs.__init__(self)
       self.spi: loraSPI = spi
       self.rst_pin: int = rst_pin
       self.cs_pin: int = cs_pin
@@ -26,14 +33,14 @@ class sx127x(sxBase):
       self._txen = None
       self._rxen = None
       self.sf: int = 7
-      self._bw: int = 125000
+      self._bw: int = 125_000
       self._irq: int = 0
-      self._modem: int = consts.LORA_MODEM
+      self._modem: int = xc.LORA_MODEM
       self._headerType: int = 0
       self._payloadTxRx: int = 0
       self._transmitTime: int = 0
       self._payloadLength: int = 0
-      self._frequency: int = 433000000
+      self._rf_freq: int = RF_FREQ
       self._onReceive: callable = None
       self._onTransmit: callable = None
       # SPI and GPIO pin setting
@@ -52,21 +59,24 @@ class sx127x(sxBase):
       # # Operation properties
       # _monitoring = None
       # _payloadTxRx = 32
-      self._statusWait = consts.STATUS_DEFAULT
-      self._statusIrq = consts.STATUS_DEFAULT
+      self.conf: sx127xConfOps = t.Any
+      self._statusWait = xc.STATUS_DEFAULT
+      self._statusIrq = xc.STATUS_DEFAULT
       # _transmitTime = 0.0
       # -- -- -- --
-      GPIO.setup([self.rst_pin, self.cs_pin], GPIO.OUT)
+      self.regs: sx127xRegs = sx127xRegs()
+      self.conf: sx127xConfOps = sx127xConfOps(regs=self.regs)
 
    def init(self):
+      GPIO.setup([self.rst_pin, self.cs_pin], GPIO.OUT)
       self.reset()
 
    def begin(self) -> bool:
       try:
          self.reset()
-         self.setModem(consts.LORA_MODEM)
-         self.setTxPower(17, consts.TX_POWER_PA_BOOST)
-         self.setRxGain(consts.RX_GAIN_BOOSTED, consts.RX_GAIN_AUTO)
+         self.conf.setModem(xc.LORA_MODEM)
+         self.setTxPower(17, xc.TX_POWER_PA_BOOST)
+         self.setRxGain(xc.RX_GAIN_BOOSTED, xc.RX_GAIN_AUTO)
          return True
       except Exception as e:
          print(e)
@@ -82,78 +92,23 @@ class sx127x(sxBase):
 
    def chip_ver(self):
       ver = 0x00
-      t = time.time()
-      while ver != 0x12 and ver != 0x22:
-         ver = self.readRegister(regs.REG_VERSION)
-         if time.time() - t > 8:
+      _t = time.time()
+      # while ver != 0x12 and ver != 0x22:
+      while ver not in [xc.CHIP_VER_0x12, xc.CHIP_VER_0x22]:
+         ver = self.regs.readReg(self.regs.REG_VERSION)
+         if time.time() - _t > 8:
             return False
          print(f"[ ver: {ver} | hex: 0x{ver:02X} ]")
       return True
 
-   def setModem(self, modem: int):
-      print("[ setModem ]")
-      if modem != consts.LORA_MODEM:
-         raise f"BadModemSetting: {modem}"
-      self._modem = consts.LONG_RANGE_MODE
-      time.sleep(0.002)
-      val = self.writeRegister(regs.REG_OP_MODE, self._modem | consts.MODE_STDBY)
-      print(val)
-
-   def setTxPower(self, txPower: int, paPin: int):
-      # maximum TX power is 20 dBm and 14 dBm for RFO pin
-      if txPower > 20:
-         txPower = 20
-      elif txPower > 14 and paPin == consts.TX_POWER_RFO:
-         txPower = 14
-      # -- -- -- --
-      paConfig = 0x00
-      outputPower = 0x00
-      if paPin == consts.TX_POWER_RFO:
-         # txPower = Pmax - (15 - outputPower)
-         if txPower == 14:
-            # max power (Pmax) 14.4 dBm
-            paConfig = 0x60
-            outputPower = txPower + 1
-         else:
-            # max power (Pmax) 13.2 dBm
-            paConfig = 0x40
-            outputPower = txPower + 2
-      else:
-         paDac = 0x04
-         paConfig = 0xC0
-         # txPower = 17 - (15 - outputPower)
-         if txPower > 17:
-            outputPower = 15
-            paDac = 0x07
-            self.setCurrentProtection(100)  # max current 100 mA
-         else:
-            if txPower < 2: txPower = 2
-            outputPower = txPower - 2
-            self.setCurrentProtection(140)  # max current 140 mA
-         # enable or disable +20 dBm option on PA_BOOST pin
-         self.writeRegister(regs.REG_PA_DAC, paDac)
-      # -- set PA config --
-      self.writeRegister(regs.REG_PA_CONFIG, paConfig | outputPower)
-
-   def writeRegister(self, address: int, data: int) -> int:
-      return self._transfer(address | 0x80, data)
-
-   def readRegister(self, address: int) -> int:
-      return self._transfer(address & 0x7F, 0x00)
-
-   def _transfer(self, address: int, data: int) -> int:
-      buff_arr = [address, data]
-      print(f"[ spi sending: {buff_arr} ]")
-      self.__set_cs(GPIO.LOW)
-      rval: () = self.spi.xtfr2(buff_arr)
-      self.__set_cs(GPIO.HIGH)
-      print(f"[ rval: {rval}]")
-      if len(rval) == 2:
-         return int(rval[1])
-      return -1
-
    def __set_cs(self, val: bool):
       GPIO.output(self.cs_pin, val)
+
+   def __set_cs_low(self):
+      GPIO.output(self.cs_pin, 0)
+
+   def __set_cs_high(self):
+      GPIO.output(self.cs_pin, 1)
 
    def end(self):
       pass
@@ -197,73 +152,9 @@ class sx127x(sxBase):
    def write(self, data, length: int):
       pass
 
-   def request(self, timeout: int) -> bool:
-      # skip to enter RX mode when previous RX operation incomplete
-      rxMode = self.readRegister(regs.REG_OP_MODE) & 0x07
-      if rxMode == consts.MODE_RX_SINGLE or rxMode == consts.MODE_RX_CONTINUOUS:
-         return False
-      # clear IRQ flag from last TX or RX operation
-      self.writeRegister(regs.REG_IRQ_FLAGS, 0xFF)
-      # save current txen and rxen pin state and set txen pin to low and rxen pin to high
-      # if self._txen != None and self._rxen != None:
-      #    self._txState = self._txen.input()
-      #    self._rxState = self._rxen.input()
-      #    self._txen.output(LoRaGpio.LOW)
-      #    self._rxen.output(LoRaGpio.HIGH)
-      # set status to RX wait
-      self._statusIrq = 0x00
-      self._statusWait = consts.STATUS_RX_WAIT
-      # select RX mode to RX continuous mode for RX single and continuos operation
-      rxMode = consts.MODE_RX_CONTINUOUS
-      if timeout == consts.RX_CONTINUOUS:
-         self._statusWait = consts.STATUS_RX_CONTINUOUS
-      elif timeout > 0:
-         # Select RX mode to single mode for RX operation with timeout
-         rxMode = consts.MODE_RX_SINGLE
-         # calculate and set symbol timeout
-         symbTimeout = int(timeout * self._bw / 1000) >> self.sf  # devided by 1000, ms to s
-         self.writeBits(regs.REG_MODEM_CONFIG_2, (symbTimeout >> 8) & 0x03, 0, 2)
-         self.writeRegister(regs.REG_SYMB_TIMEOUT_LSB, symbTimeout & 0xFF)
-      # set device to receive mode
-      self.writeRegister(regs.REG_OP_MODE, self._modem | rxMode)
-      # set RX done interrupt on DIO0 and attach RX interrupt handler
-      if self._irq is not None:
-         self.writeRegister(regs.REG_DIO_MAPPING_1, consts.DIO0_RX_DONE)
-         if isinstance(self._monitoring, Thread):
-            self._monitoring.join()
-         to = self._irqTimeout / 1000 if timeout == 0 else timeout / 1000
-         if timeout == self.RX_CONTINUOUS:
-            self._monitoring = Thread(target=self._irq.monitor_continuous, args=(self._interruptRxContinuous, to))
-            self._monitoring.setDaemon(True)
-         else:
-            self._monitoring = Thread(target=self._irq.monitor, args=(self._interruptRx, to))
-         self._monitoring.start()
-      return True
-
-   # get size of package still available to read
-   def available(self):
-      return self._payloadTxRx
-
-   # single or multiple bytes read
-   def read(self, length: int):
-      single = False
-      if length == 0:
-         length = 1
-         single = True
-      # calculate actual read length and remaining payload length
-      if self._payloadTxRx > length:
-         self._payloadTxRx -= length
-      else:
-         self._payloadTxRx = 0
-      # read multiple bytes of received package in FIFO buffer
-      data = tuple()
-      for i in range(length):
-         data = data + (self.readRegister(regs.REG_FIFO),)
-      # return single byte or tuple
-      if single:
-         return data[0]
-      else:
-         return data
+   ###
+   # WAIT, OPERATION STATUS, AND PACKET STATUS METHODS
+   # ###
 
    def wait(self, timeout: int) -> bool:
       # immediately return when currently not waiting
@@ -345,21 +236,7 @@ class sx127x(sxBase):
       # register onReceive function to call every receive done
       self._onReceive = callback
 
-   def setCurrentProtection(self, current: int):
-      # calculate ocp trim
-      ocpTrim = 27
-      if current <= 120:
-         ocpTrim = int((current - 45) / 5)
-      elif current <= 240:
-         ocpTrim = int((current + 30) / 10)
-      # set over-current protection config
-      self.writeRegister(regs.REG_OCP, 0x20 | ocpTrim)
 
-   def setOscillator(self, option: int):
-      cfg = consts.OSC_CRYSTAL
-      if option == consts.OSC_TCXO:
-         cfg = consts.OSC_TCXO
-      self.writeRegister(regs.REG_TCXO, cfg)
 
    def setRxGain(self, boost: int, level: int):
       # valid RX gain level 0 - 6 (0 -> AGC on)
@@ -431,10 +308,10 @@ class sx127x(sxBase):
          bwCfg = 8      # 250 kHz
       self.writeBits(regs.REG_MODEM_CONFIG_1, bwCfg, 4, 4)
 
-   def setFrequency(self, frequency: int):
-      self._frequency = frequency
+   def setFrequency(self, freq: int):
+      self._rf_freq = freq
       # calculate frequency
-      frf = int((frequency << 19) / 32000000)
+      frf = int((freq << 19) / 32000000)
       self.writeRegister(regs.REG_FRF_MSB, (frf >> 16) & 0xFF)
       self.writeRegister(regs.REG_FRF_MID, (frf >> 8) & 0xFF)
       self.writeRegister(regs.REG_FRF_LSB, frf & 0xFF)
@@ -488,7 +365,7 @@ class sx127x(sxBase):
    # get relative signal strength index (RSSI) of last incoming package
    def packetRssi(self) -> float:
       offset = consts.RSSI_OFFSET_HF
-      if self._frequency < consts.BAND_THRESHOLD:
+      if self._rf_freq < consts.BAND_THRESHOLD:
          offset = consts.RSSI_OFFSET_LF
       if self.readRegister(regs.REG_VERSION) == 0x22:
          offset = consts.RSSI_OFFSET
@@ -496,7 +373,7 @@ class sx127x(sxBase):
 
    def rssi(self) -> float:
       offset = consts.RSSI_OFFSET_HF
-      if self._frequency < consts.BAND_THRESHOLD:
+      if self._rf_freq < consts.BAND_THRESHOLD:
          offset = consts.RSSI_OFFSET_LF
       if self.readRegister(regs.REG_VERSION) == 0x22:
          offset = consts.RSSI_OFFSET
@@ -515,6 +392,6 @@ class sx127x(sxBase):
    # keep compatibility between 1 and 2 bytes synchronize word
    def setSyncWord(self, syncWord: int):
       sw = syncWord
-      if syncWord > 0xFF:
+      if syncWord > 0xFF:y
          sw = ((syncWord >> 8) & 0xF0) | (syncWord & 0x0F)
       self.writeRegister(regs.REG_SYNC_WORD, sw)

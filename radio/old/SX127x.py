@@ -152,7 +152,7 @@ class SX127x(BaseLoRa):
     # LoRa setting
     _dio = 1
     _modem = LORA_MODEM
-    # _frequency = 915000000
+    # _rf_freq = 915000000
     _frequency = 433000000
     _sf = 7
     _bw = 125000

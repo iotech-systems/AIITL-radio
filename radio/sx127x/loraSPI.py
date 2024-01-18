@@ -1,46 +1,55 @@
 
 import spidev, typing as t
+from core.utils import utils
 
 
-# -- dev / 6 --
-SPI_SPEED: int = 3900000
+# -- bus_dev / 6 --
+SPI_SPEED: int = 3_900_000
 
 
-class loraSPI(object):
+class loraSPI(spidev.SpiDev):
 
-   def __init__(self, bus: int = 0, bus_dev: int = 0, bus_hz: int = SPI_SPEED):
+   def __init__(self, bus: int = 0, bus_dev: int = 0
+         , bus_hz: int = SPI_SPEED, keep_open: bool = False):
       try:
+         super().__init__()
          self.bus = bus
-         self.dev = bus_dev
-         self.spd_hz = bus_hz
+         self.bus_dev = bus_dev
+         self.bus_hz = bus_hz
          self.mode: int = 0
          self.lsbfst: bool = False
-         self.spi: spidev.SpiDev = spidev.SpiDev()
+         # -- not used yet --
+         self.keep_open: bool = keep_open
+         self.is_opened: bool = False
       except Exception as e:
-         print(e)
+         utils.log_err(e)
       finally:
          pass
 
    def dump(self):
-      self.spi.open(bus=self.bus, device=self.dev)
-      self.spi.max_speed_hz = self.spd_hz
-      print(f"lsbfst: {self.spi.lsbfirst} | mode: {self.spi.mode} | hz: {self.spi.max_speed_hz}")
-      self.spi.close()
+      self.open(bus=self.bus, device=self.bus_dev)
+      self.max_speed_hz = self.bus_hz
+      print(f"lsbfst: {self.lsbfirst} | mode: {self.mode} | hz: {self.max_speed_hz}")
+      self.close()
 
    def init(self):
-      self.spi.open(bus=self.bus, device=self.dev)
-      self.spi.max_speed_hz = self.spd_hz
-      print(f"lsbfst: {self.spi.lsbfirst} | mode: {self.spi.mode} | hz: {self.spi.max_speed_hz}")
-      self.spi.close()
+      self.open(bus=self.bus, device=self.bus_dev)
+      self.max_speed_hz = self.bus_hz
+      print((f"lsbfst: {self.lsbfirst} | mode: {self.mode} "
+         f"| hz: {self.max_speed_hz}"))
+      self.close()
 
    def xtfr2(self, buff: t.Iterable) -> tuple:
       try:
-         self.spi.open(self.bus, self.dev)
-         self.spi.max_speed_hz = self.spd_hz
-         self.spi.lsbfirst = self.lsbfst
-         self.spi.mode = self.mode
-         return self.spi.xfer2(buff)
+         self.open(bus=self.bus, device=self.bus_dev)
+         self.max_speed_hz = self.bus_hz
+         self.lsbfirst = self.lsbfst
+         self.mode = self.mode
+         return self.xfer2(buff)
       except Exception as e:
-         print(e)
+         utils.log_err(e)
       finally:
-         self.spi.close()
+         try:
+            self.close()
+         finally:
+            pass

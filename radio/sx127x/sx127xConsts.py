@@ -63,3 +63,6 @@ class sx127xConsts(object):
    STATUS_CAD_WAIT = 10
    STATUS_CAD_DETECTED = 11
    STATUS_CAD_DONE = 12
+   # -- chip ver --
+   CHIP_VER_0x12 = 0x12
+   CHIP_VER_0x22 = 0x22
