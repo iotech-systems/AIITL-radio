@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import os, sys, typing as t
+from termcolor import colored
 sys.path.insert(0, "../")
 # -- system --
 from core.utils import utils
+from core.enums import TCOLORS
 from radio.sx127x.loraSPI import loraSPI
 # from radio.sx127x.sx127x import sx127x
 
@@ -78,7 +80,8 @@ def main():
    # -- -- -- --
    def __loop():
       try:
-         print(f"\n[ sxcli: ver.: {VER} ]\n")
+         msg: str = f"\n[ sxcli: ver.: {VER} ]\n"
+         print(colored(msg, color=TCOLORS.light_blue.name))
          _input = input("xscli: ").strip()
          if _input in arrows:
             # sys.stdin.write()
