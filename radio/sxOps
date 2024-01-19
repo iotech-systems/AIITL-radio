@@ -105,9 +105,10 @@ class cli(object):
       if buff == "!q":
          print("\n[ !q : exit ]\n")
          exit(0)
-      # -- misc --
+      # -- misc/ cls --
       if buff in ["cls"]:
          sxOps.cls()
+         return
       # -- check spi --
       if self.spidev == t.Any:
          print("run: set_spi x y z")
