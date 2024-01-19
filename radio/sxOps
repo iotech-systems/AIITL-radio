@@ -2,6 +2,7 @@
 
 import os, sys, typing as t
 from termcolor import colored
+import spidev as sp
 sys.path.insert(0, "../")
 # -- system --
 from core.utils import utils
@@ -13,10 +14,10 @@ from radio.sx127x.sx127x import sx127x
 VER: str = "2024.01.18.01"
 
 
-class sxcli(object):
+class sxOps(object):
 
    def __init__(self):
-      self.lora_spi: loraSPI = t.Any
+
       self._sx127x: sx127x = sx127x(spi=self.lora_spi, rst_pin=0, cs_pin=0)
 
    # -- cls input --
@@ -44,9 +45,9 @@ class sxcli(object):
          return 1
       # -- -- -- --
       bid, bdev, bhz = tks
-      self.lora_spi \
-         = loraSPI(bus=int(bid), bus_dev=int(bdev), bus_hz=int(bhz))
-      self.lora_spi.init()
+      # self.lora_spi \
+      #    = loraSPI(bus=int(bid), bus_dev=int(bdev), bus_hz=int(bhz))
+      # self.lora_spi.init()
       print(f"SPI.init: {self.lora_spi.init_code}")
       b, d = self.lora_spi.bus, self.lora_spi.bus_dev
       buff = os.popen(f"spi-config -d /dev/spidev{b}.{d} -q").read()
@@ -92,15 +93,23 @@ class cli(object):
    def __init__(self):
       self.cmd_hist: [] = []
       self.arrows: [] = ["^[[A", "^[[B"]
-      self._sxcli: sxcli = sxcli()
+      self.rst_pin: int = 0
+      self.cs_pin: int = 0
+      self.spi_hz: int = 0
+      self.spidev: sp.SpiDev = sp.SpiDev()
+      self.sxops: sxOps = sxOps()
 
    def run_cmd(self, buff: str):
       if buff == "!q":
          print("\n[ !q : exit ]\n")
          exit(0)
+      # -- check spi --
+      if self.rst_pin == 0 or self.cs_pin == 0 or self.spi_hz == 0:
+         print("you must setup spi buss info")
+         return
       # -- run command --
       print(colored(f">> {buff} <<", color=TCOLORS.green.name))
-      self._sxcli.run([arg.strip() for arg in buff.split(" ")])
+      self.sxops.run([arg.strip() for arg in buff.split(" ")])
 
    def main(self):
       # -- -- -- --
