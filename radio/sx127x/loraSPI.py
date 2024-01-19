@@ -50,7 +50,7 @@ class loraSPI(object):
          pass
 
    # t.Iterable
-   def xtfr2(self, buff: bytearray) -> tuple | None:
+   def xtfr2(self, buff: bytearray) -> t.Optional[tuple]:
       try:
          self.sysspi.open(bus=self.bus, device=self.bus_dev)
          self.sysspi.max_speed_hz = self.bus_hz
