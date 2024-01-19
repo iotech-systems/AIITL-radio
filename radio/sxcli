@@ -104,7 +104,7 @@ class cli(object):
 
    def main(self):
       # -- -- -- --
-      def __loop():
+      def __loop_tick():
          try:
             msg: str = f"\n[ sxcli | ver.: {VER} ]\n"
             print(colored(msg, color=TCOLORS.light_blue.name))
@@ -117,7 +117,7 @@ class cli(object):
             print(e)
       # -- -- -- --
       while True:
-        __loop()
+        __loop_tick()
       # -- -- -- --
 
 
