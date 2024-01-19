@@ -21,7 +21,8 @@ class sxOps(object):
       # self._sx127x: sx127x = sx127x(
 
    # -- cls input --
-   def cls(self, tks: [] = None):
+   @staticmethod
+   def cls():
       os.system("clear")
 
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -104,6 +105,9 @@ class cli(object):
       if buff == "!q":
          print("\n[ !q : exit ]\n")
          exit(0)
+      # -- misc --
+      if buff in ["cls"]:
+         sxOps.cls()
       # -- check spi --
       if self.spidev == t.Any:
          print("run: set_spi x y z")
