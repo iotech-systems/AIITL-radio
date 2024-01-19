@@ -49,7 +49,8 @@ class loraSPI(object):
       finally:
          pass
 
-   def xtfr2(self, buff: t.Iterable) -> tuple:
+   # t.Iterable
+   def xtfr2(self, buff: bytearray) -> tuple | None:
       try:
          self.sysspi.open(bus=self.bus, device=self.bus_dev)
          self.sysspi.max_speed_hz = self.bus_hz
@@ -58,6 +59,7 @@ class loraSPI(object):
          return self.sysspi.xfer2(buff)
       except Exception as e:
          utils.log_err(e)
+         return None
       finally:
          try:
             self.sysspi.close()

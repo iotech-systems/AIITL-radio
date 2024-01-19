@@ -7,7 +7,8 @@ sys.path.insert(0, "../")
 from core.utils import utils
 from core.enums import TCOLORS
 from radio.sx127x.loraSPI import loraSPI
-# from radio.sx127x.sx127x import sx127x
+from radio.sx127x.sx127xRegs import sx127xRegs
+from radio.sx127x.sx127x import sx127x
 
 
 VER: str = "2024.01.18.01"
@@ -17,24 +18,26 @@ class sxcli(object):
 
    def __init__(self):
       self.lora_spi: loraSPI = t.Any
-      # self._sx127x: sx127x = sx127x()
-      # self.methods: {} = {"set_spi": None, "read_reg": None, "write_reg": None}
+      self._sx127x: sx127x = sx127x(spi=self.lora_spi, rst_pin=0, cs_pin=0)
 
-   #
-   # -- read reg --
-   #
-   def read_reg(self):
-      print("read_reg")
-
-   #
    # -- cls input --
-   #
    def cls(self, tks: [] = None):
       os.system("clear")
 
-   #
+   # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+   # --- GETs / READs --- #
+
+   # -- read reg --
+   def read_reg(self):
+      print("read_reg")
+
+   def get_ver(self):
+      pass
+
+   # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+   # --- SETs --- #
+
    # -- set spi vals --
-   #
    def set_spi(self, tks: []):
       token_cnt: int = len(tks)
       if token_cnt != 3:
@@ -50,12 +53,25 @@ class sxcli(object):
       buff = os.popen(f"spi-config -d /dev/spidev{b}.{d} -q").read()
       print(buff)
 
-   #
+   def run_sets(self, tks: []):
+      pass
+
+   def run_gets(self, tks: []):
+      pass
+
+   # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
    # -- -- runner -- --
-   #
    def run(self, tokens: []):
       try:
-         cmd_call_name: str = str(tokens[0]).strip()
+         # -- -- -- --
+         cmd_call_name: str = str(tokens[0]).strip().upper()
+         if cmd_call_name == "SET":
+            self.run_sets(tokens)
+         elif cmd_call_name == "GET":
+            self.run_gets(tokens)
+         else:
+            pass
+         # -- -- -- --
          cmd_object = getattr(self, cmd_call_name, None)
          if cmd_object is None:
             print(f"AttrNotFound: {cmd_call_name}")
@@ -69,44 +85,48 @@ class sxcli(object):
          pass
 
 
+# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+# -- cli class --
 #
-# -- entry point calls --
-#
+class cli(object):
 
-def run_cmd(buff: str):
-   if buff == ".q":
-      print("\n[ .q : exit ]\n")
-      exit(0)
-   # -- run command --
-   print(colored(f">> {buff} <<", color=TCOLORS.green.name))
-   _sxcli: sxcli = sxcli()
-   _sxcli.run(buff.split(" "))
+   def __init__(self):
+      self.cmd_hist: [] = []
+      self.arrows: [] = ["^[[A", "^[[B"]
+      self._sxcli: sxcli = sxcli()
+      self._sxcli.cls()
+
+   def run_cmd(self,buff: str):
+      if buff == "!q":
+         print("\n[ !q : exit ]\n")
+         exit(0)
+      # -- run command --
+      print(colored(f">> {buff} <<", color=TCOLORS.green.name))
+      _sxcli: sxcli = sxcli()
+      _sxcli.run([arg.strip() for arg in buff.split(" ")])
+
+   def main(self):
+      # -- -- -- --
+      def __loop():
+         try:
+            msg: str = f"\n[ sxcli | ver.: {VER} ]\n"
+            print(colored(msg, color=TCOLORS.light_blue.name))
+            _input = input("xscli: ").strip()
+            if _input in self.arrows:
+               return
+            # -- -- -- --
+            self.run_cmd(_input)
+            # cmd_hist.append(_input)
+         except Exception as e:
+            print(e)
+      # -- -- -- --
+      while True:
+        __loop()
+      # -- -- -- --
 
 
-# -- -- main loop -- --
-def main():
-   # -- -- -- --
-   cmd_hist: [] = []
-   arrows: [] = ["^[[A", "^[[B"]
-   # -- -- -- --
-   def __loop():
-      try:
-         msg: str = f"\n[ sxcli | ver.: {VER} ]\n"
-         print(colored(msg, color=TCOLORS.light_blue.name))
-         _input = input("xscli: ").strip()
-         if _input in arrows:
-            return
-         # -- -- -- --
-         run_cmd(_input)
-         cmd_hist.append(_input)
-      except Exception as e:
-         print(e)
-   # -- -- -- --
-   while True:
-     __loop()
-   # -- -- -- --
-
-
+# = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # -- -- entry point -- --
 if __name__ == "__main__":
-    main()
+   _cli: cli = cli()
+   _cli.main()

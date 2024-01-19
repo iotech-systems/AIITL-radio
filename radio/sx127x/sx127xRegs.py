@@ -1,4 +1,9 @@
 
+import spidev
+
+R_MASK: int = 0x7f
+W_MASK: int = 0x80
+
 
 class sx127xRegs(object):
 
@@ -63,21 +68,39 @@ class sx127xRegs(object):
    REG_AGC_THRESH_3 = 0x64
    REG_PLL = 0x70
 
-   def __init__(self):
+   def __init__(self, spi: spidev.SpiDev, cs_pin: int = None
+         ,  with_cs: bool = False):
+      # -- -- -- --
+      self.spi: spidev.SpiDev = spi
+      # cs should be fixed with hardware ???
+      self.cs_pin: int = cs_pin
+      self.with_cs: bool = with_cs
+
+   def writeBits(self, address: int, data: int
+         , position: int, length: int):
+      # -- -- -- --
+      read = self._transfer(address & R_MASK, 0x00)
+      mask = (0xFF >> (8 - length)) << position
+      write = (data << position) | (read & ~mask)
+      self._transfer(address | W_MASK, write)
+
+   def writeS(self, address: int, data: int) -> int:
+      return self._transfer(address | W_MASK, data)
+
+   def writeM(self, address: int, data: bytes) -> int:
       pass
 
-   def writeReg(self, address: int, data: int) -> int:
-      return self._transfer(address | 0x80, data)
+   def readS(self, address: int) -> int:
+      return self._transfer(address & R_MASK, 0x00)
 
-   def readReg(self, address: int) -> int:
-      return self._transfer(address & 0x7F, 0x00)
-
-   def _transfer(self, address: int, data: int) -> int:
+   def _transfer(self, address: int, data: int, with_cs: bool = False) -> int:
+      print(f"[ spi sending: {[address, data]} ]")
       buff_arr = [address, data]
-      print(f"[ spi sending: {buff_arr} ]")
-      self.__set_cs_low()
+      if with_cs:
+         self.__set_cs_low()
       rval: () = self.spi.xtfr2(buff_arr)
-      self.__set_cs_high()
+      if with_cs:
+         self.__set_cs_high()
       print(f"[ rval: {rval}]")
       if len(rval) == 2:
          return int(rval[1])

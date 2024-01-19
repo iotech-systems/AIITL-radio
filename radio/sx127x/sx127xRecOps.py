@@ -1,20 +1,23 @@
 
-from .sx127xRegs import sx127xRegs as regs
+from .sx127xRegs import sx127xRegs
 from .sx127xConsts import sx127xConsts as consts
 
 
 class sx127xRecOps(object):
 
-   def __init__(self):
-      pass
+   def __init__(self, regs: sx127xRegs):
+      self.regs: sx127xRegs = regs
+      self._payloadTxRx = None
+      self._statusWait: int = 0
+      self._statusIrq: int = 0x00
 
    def request(self, timeout: int) -> bool:
       # skip to enter RX mode when previous RX operation incomplete
-      rxMode = self.readRegister(regs.REG_OP_MODE) & 0x07
+      rxMode = self.regs.readS(self.regs.REG_OP_MODE) & 0x07
       if rxMode == consts.MODE_RX_SINGLE or rxMode == consts.MODE_RX_CONTINUOUS:
          return False
       # clear IRQ flag from last TX or RX operation
-      self.writeRegister(regs.REG_IRQ_FLAGS, 0xFF)
+      self.regs.writeS(self.regs.REG_IRQ_FLAGS, 0xFF)
       # save current txen and rxen pin state and set txen pin to low and rxen pin to high
       # if self._txen != None and self._rxen != None:
       #    self._txState = self._txen.input()
@@ -69,7 +72,7 @@ class sx127xRecOps(object):
       # read multiple bytes of received package in FIFO buffer
       data = tuple()
       for i in range(length):
-         data = data + (self.readRegister(regs.REG_FIFO),)
+         data = data + (self.regs.readS(self.regs.REG_FIFO),)
       # return single byte or tuple
       if single:
          return data[0]
