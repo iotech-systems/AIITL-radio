@@ -16,9 +16,9 @@ VER: str = "2024.01.18.01"
 
 class sxOps(object):
 
-   def __init__(self):
-
-      self._sx127x: sx127x = sx127x(spi=self.lora_spi, rst_pin=0, cs_pin=0)
+   def __init__(self, spi: sp.SpiDev):
+      self.spidev: sp.SpiDev = spi
+      # self._sx127x: sx127x = sx127x(
 
    # -- cls input --
    def cls(self, tks: [] = None):
@@ -44,10 +44,8 @@ class sxOps(object):
          print(f"WrongArgCount: {token_cnt} | bid, bdev, rst_pin, ss_pin")
          return 1
       # -- -- -- --
-      bid, bdev, bhz = tks
-      # self.lora_spi \
-      #    = loraSPI(bus=int(bid), bus_dev=int(bdev), bus_hz=int(bhz))
-      # self.lora_spi.init()
+      b_id, b_dev, b_hz = tks
+
       print(f"SPI.init: {self.lora_spi.init_code}")
       b, d = self.lora_spi.bus, self.lora_spi.bus_dev
       buff = os.popen(f"spi-config -d /dev/spidev{b}.{d} -q").read()
@@ -57,6 +55,9 @@ class sxOps(object):
       pass
 
    def run_gets(self, tks: []):
+      pass
+
+   def run_misc(self, tks: []):
       pass
 
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -70,7 +71,7 @@ class sxOps(object):
          elif cmd_call_name == "GET":
             self.run_gets(tokens)
          else:
-            pass
+            self.run_misc(tokens)
          # -- -- -- --
          cmd_object = getattr(self, cmd_call_name, None)
          if cmd_object is None:
@@ -96,16 +97,16 @@ class cli(object):
       self.rst_pin: int = 0
       self.cs_pin: int = 0
       self.spi_hz: int = 0
-      self.spidev: sp.SpiDev = sp.SpiDev()
-      self.sxops: sxOps = sxOps()
+      self.spidev: sp.SpiDev = t.Any
+      self.sxops: sxOps = t.Any
 
    def run_cmd(self, buff: str):
       if buff == "!q":
          print("\n[ !q : exit ]\n")
          exit(0)
       # -- check spi --
-      if self.rst_pin == 0 or self.cs_pin == 0 or self.spi_hz == 0:
-         print("you must setup spi buss info")
+      if self.spidev == t.Any:
+         print("run: set_spi x y z")
          return
       # -- run command --
       print(colored(f">> {buff} <<", color=TCOLORS.green.name))

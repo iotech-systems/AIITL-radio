@@ -68,7 +68,6 @@ class sx127x(sxBase):
       self.conf: sx127xConfOps = sx127xConfOps(regs=self.regs)
 
    def init(self):
-      GPIO.setup([self.rst_pin, self.cs_pin], GPIO.OUT)
       self.reset()
 
    def begin(self) -> bool:
@@ -85,10 +84,10 @@ class sx127x(sxBase):
          pass
 
    def reset(self):
-      GPIO.output(self.rst_pin, GPIO.LOW)
+      self.rst_pin.off()
       time.sleep(0.004)
-      GPIO.output(self.rst_pin, GPIO.HIGH)
-      time.sleep(0.0016)
+      self.rst_pin.on()
+      time.sleep(0.008)
 
    def chip_ver(self):
       ver = 0x00
