@@ -6,8 +6,9 @@ W_MASK: int = 0x80
 
 
 class sx127xRegs(object):
-
+   #
    # SX127X LoRa Mode Register Map
+   #
    REG_FIFO = 0x00
    REG_OP_MODE = 0x01
    REG_FRF_MSB = 0x06
@@ -68,40 +69,37 @@ class sx127xRegs(object):
    REG_AGC_THRESH_3 = 0x64
    REG_PLL = 0x70
 
-   def __init__(self, spi: spidev.SpiDev, cs_pin: int = None
-         ,  with_cs: bool = False):
-      # -- -- -- --
+   def __init__(self, spi: spidev.SpiDev):
       self.spi: spidev.SpiDev = spi
-      # cs should be fixed with hardware ???
-      self.cs_pin: int = cs_pin
-      self.with_cs: bool = with_cs
 
-   def writeBits(self, address: int, data: int
+   def set_bits(self, address: int, data: int
          , position: int, length: int):
       # -- -- -- --
-      read = self._transfer(address & R_MASK, 0x00)
+      _tup: () = self._tfer(address & R_MASK, 0x00)
+      read = sx127xRegs._val(_tup)
       mask = (0xFF >> (8 - length)) << position
       write = (data << position) | (read & ~mask)
-      self._transfer(address | W_MASK, write)
+      _tup: () = self._tfer(address | W_MASK, write)
 
-   def writeS(self, address: int, data: int) -> int:
-      return self._transfer(address | W_MASK, data)
+   def set_reg(self, address: int, data: int) -> int:
+      _tup: () = self._tfer(address | W_MASK, data)
+      return sx127xRegs._val(_tup)
 
-   def writeM(self, address: int, data: bytes) -> int:
-      pass
+   def get_reg(self, address: int) -> int:
+      _tup: () = self._tfer(address & R_MASK, 0x00)
+      return sx127xRegs._val(_tup)
 
-   def readS(self, address: int) -> int:
-      return self._transfer(address & R_MASK, 0x00)
+   # -- private -- #
 
-   def _transfer(self, address: int, data: int, with_cs: bool = False) -> int:
+   def _tfer(self, address: int, data: int) -> tuple:
       print(f"[ spi sending: {[address, data]} ]")
       buff_arr = [address, data]
-      if with_cs:
-         self.__set_cs_low()
-      rval: () = self.spi.xtfr2(buff_arr)
-      if with_cs:
-         self.__set_cs_high()
+      rval: () = self.spi.xfer2(buff_arr)
       print(f"[ rval: {rval}]")
-      if len(rval) == 2:
-         return int(rval[1])
+      return rval
+
+   @staticmethod
+   def _val(_tup: ()):
+      if len(_tup) == 2:
+         return _tup[1]
       return -1

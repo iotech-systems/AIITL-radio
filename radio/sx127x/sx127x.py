@@ -1,13 +1,15 @@
 
+import spidev as sd
 import time, platform
 import os, typing as t
+# -- -- -- --
 if "arm" in platform.machine():
    import RPi.GPIO as GPIO
 else:
    from gpioStub import stubGPIO as GPIO
 # -- -- -- --
+from .pinX import pinX
 from .sxBase import sxBase
-from .loraSPI import loraSPI
 from .sx127xRegs import sx127xRegs
 from .sx127xConsts import sx127xConsts as xc
 from .sx127xRecOps import sx127xRecOps
@@ -21,10 +23,11 @@ GPIO.setmode(GPIO.BCM)
 
 class sx127x(sxBase):
 
-   def __init__(self, spi: loraSPI, rst_pin: int, cs_pin: int):
-      self.spi: loraSPI = spi
-      self.rst_pin: int = rst_pin
-      self.cs_pin: int = cs_pin
+   def __init__(self, chip_id: str, rst_pin: int, cs_pin: int):
+      self.chip_id: str = chip_id
+      self.spidev: sd.SpiDev = sd.SpiDev()
+      self.rst_pin: pinX = pinX("RST_PIN", rst_pin, GPIO.OUT)
+      self.cs_pin: pinX = pinX("CS_PIN", cs_pin, GPIO.OUT)
       # -- pins in org. code --
       self._txen = None
       self._rxen = None
@@ -60,7 +63,7 @@ class sx127x(sxBase):
       self._statusIrq = xc.STATUS_DEFAULT
       # _transmitTime = 0.0
       # -- -- -- --
-      self.regs: sx127xRegs = sx127xRegs()
+      self.regs: sx127xRegs = sx127xRegs(spi=self.spidev)
       self.recv: sx127xRecOps = sx127xRecOps(regs=self.regs)
       self.conf: sx127xConfOps = sx127xConfOps(regs=self.regs)
 
@@ -91,7 +94,7 @@ class sx127x(sxBase):
       ver = 0x00
       _t = time.time()
       while ver not in [xc.CHIP_VER_0x12, xc.CHIP_VER_0x22]:
-         ver = self.regs.readS(self.regs.REG_VERSION)
+         ver = self.regs.get_reg(self.regs.REG_VERSION)
          if time.time() - _t > 4:
             return False
          print(f"[ ver: {ver} | hex: 0x{ver:02X} ]")
@@ -168,7 +171,7 @@ class sx127x(sxBase):
       while not (irqFlag & irqFlagMask) and self._statusIrq == 0x00:
          # only check IRQ status register for non interrupt operation
          if self._irq is None:
-            irqFlag = self.regs.readS(self.regs.REG_IRQ_FLAGS)
+            irqFlag = self.regs.get_reg(self.regs.REG_IRQ_FLAGS)
          # return when timeout reached
          if time.time() - tt > timeout > 0:
             return False
@@ -186,9 +189,9 @@ class sx127x(sxBase):
          # terminate receive mode by setting mode to standby
          self.standby()
          # set pointer to RX buffer base address and get packet payload length
-         self.regs.writeS(self.regs.REG_FIFO_ADDR_PTR
-            , self.regs.readS(self.regs.REG_FIFO_RX_CURRENT_ADDR))
-         self._payloadTxRx = self.regs.readS(self.regs.REG_RX_NB_BYTES)
+         self.regs.set_reg(self.regs.REG_FIFO_ADDR_PTR
+            , self.regs.get_reg(self.regs.REG_FIFO_RX_CURRENT_ADDR))
+         self._payloadTxRx = self.regs.get_reg(self.regs.REG_RX_NB_BYTES)
          # set back txen and rxen pin to previous state
          if self._txen is not None and self._rxen is not None:
             # self._txen.output(self._txState)
@@ -196,17 +199,17 @@ class sx127x(sxBase):
             pass
       elif self._statusWait == xc.STATUS_RX_CONTINUOUS:
          # set pointer to RX buffer base address and get packet payload length
-         self.regs.writeS(self.regs.REG_FIFO_ADDR_PTR
-            , self.regs.readS(self.regs.REG_FIFO_RX_CURRENT_ADDR))
-         self._payloadTxRx = self.regs.readS(self.regs.REG_RX_NB_BYTES)
+         self.regs.set_reg(self.regs.REG_FIFO_ADDR_PTR
+            , self.regs.get_reg(self.regs.REG_FIFO_RX_CURRENT_ADDR))
+         self._payloadTxRx = self.regs.get_reg(self.regs.REG_RX_NB_BYTES)
          # clear IRQ flag
-         self.regs.writeS(self.regs.REG_IRQ_FLAGS, 0xFF)
+         self.regs.set_reg(self.regs.REG_IRQ_FLAGS, 0xFF)
       # store IRQ status
       self._statusIrq = irqFlag
       return True
 
    def standby(self):
-      self.regs.writeS(self.regs.REG_OP_MODE, self._modem | xc.MODE_STDBY)
+      self.regs.set_reg(self.regs.REG_OP_MODE, self._modem | xc.MODE_STDBY)
 
    def status(self):
       # set back status IRQ for RX continuous operation
@@ -243,22 +246,22 @@ class sx127x(sxBase):
       return self._payloadTxRx / self._transmitTime
 
    # get relative signal strength index (RSSI) of last incoming package
-   def packetRssi(self) -> float:
+   def lastMsgInRssi(self) -> float:
       offset = xc.RSSI_OFFSET_HF
       if self._rf_freq < xc.BAND_THRESHOLD:
          offset = xc.RSSI_OFFSET_LF
-      if self.regs.readS(self.regs.REG_VERSION) == 0x22:
+      if self.regs.get_reg(self.regs.REG_VERSION) == 0x22:
          offset = xc.RSSI_OFFSET
-      return self.regs.readS(self.regs.REG_PKT_RSSI_VALUE) - offset
+      return self.regs.get_reg(self.regs.REG_PKT_RSSI_VALUE) - offset
 
    def rssi(self) -> float:
       offset = xc.RSSI_OFFSET_HF
       if self._rf_freq < xc.BAND_THRESHOLD:
          offset = xc.RSSI_OFFSET_LF
-      if self.regs.readS(self.regs.REG_VERSION) == 0x22:
+      if self.regs.get_reg(self.regs.REG_VERSION) == 0x22:
          offset = xc.RSSI_OFFSET
-      return self.regs.readS(self.regs.REG_RSSI_VALUE) - offset
+      return self.regs.get_reg(self.regs.REG_RSSI_VALUE) - offset
 
    # get signal-to-noise ratio (SNR) of last incoming package
    def snr(self) -> float:
-      return self.regs.readS(self.regs.REG_PKT_SNR_VALUE) / 4.0
+      return self.regs.get_reg(self.regs.REG_PKT_SNR_VALUE) / 4.0

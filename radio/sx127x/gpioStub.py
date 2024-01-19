@@ -17,6 +17,10 @@ class stubGPIO(object):
       pass
 
    @staticmethod
+   def input(pin: int) -> int:
+      pass
+
+   @staticmethod
    def setup(pin, _dir):
       pass
 

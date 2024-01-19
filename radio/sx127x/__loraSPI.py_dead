@@ -18,7 +18,10 @@ class loraSPI(object):
          self.bus_hz = bus_hz
          self.mode: int = 0
          self.lsbfst: bool = False
-         self.sysspi: spidev.SpiDev = spidev.SpiDev()
+         # self.sysspi: spidev.SpiDev = t.Any
+         self.sysspi = None
+         # self.sysspi.no_cs = False
+         # self.sysspi.cshigh = False
          self.init_code: bool = False
          # -- not used yet --
          self.keep_open: bool = keep_open
@@ -29,6 +32,9 @@ class loraSPI(object):
          pass
 
    def dump(self):
+      if self.sysspi is None:
+         raise RuntimeError("CallInitFirst")
+      # -- -- -- --
       self.sysspi.open(bus=self.bus, device=self.bus_dev)
       self.sysspi.max_speed_hz = self.bus_hz
       print(f"lsbfst: {self.sysspi.lsbfirst} | mode: {self.sysspi.mode} "
@@ -37,6 +43,9 @@ class loraSPI(object):
 
    def init(self):
       try:
+         if self.sysspi is None:
+            self.sysspi = spidev.SpiDev()
+         # -- -- -- --
          self.sysspi.open(bus=self.bus, device=self.bus_dev)
          self.sysspi.max_speed_hz = self.bus_hz
          print((f"lsbfst: {self.sysspi.lsbfirst} | mode: {self.sysspi.mode} "

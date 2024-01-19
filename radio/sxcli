@@ -6,7 +6,6 @@ sys.path.insert(0, "../")
 # -- system --
 from core.utils import utils
 from core.enums import TCOLORS
-from radio.sx127x.loraSPI import loraSPI
 from radio.sx127x.sx127xRegs import sx127xRegs
 from radio.sx127x.sx127x import sx127x
 
@@ -94,16 +93,14 @@ class cli(object):
       self.cmd_hist: [] = []
       self.arrows: [] = ["^[[A", "^[[B"]
       self._sxcli: sxcli = sxcli()
-      self._sxcli.cls()
 
-   def run_cmd(self,buff: str):
+   def run_cmd(self, buff: str):
       if buff == "!q":
          print("\n[ !q : exit ]\n")
          exit(0)
       # -- run command --
       print(colored(f">> {buff} <<", color=TCOLORS.green.name))
-      _sxcli: sxcli = sxcli()
-      _sxcli.run([arg.strip() for arg in buff.split(" ")])
+      self._sxcli.run([arg.strip() for arg in buff.split(" ")])
 
    def main(self):
       # -- -- -- --
@@ -116,7 +113,6 @@ class cli(object):
                return
             # -- -- -- --
             self.run_cmd(_input)
-            # cmd_hist.append(_input)
          except Exception as e:
             print(e)
       # -- -- -- --
