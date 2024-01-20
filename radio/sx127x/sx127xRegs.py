@@ -1,6 +1,7 @@
 
 import spidev, time
 import threading as th
+from collections import deque
 # -- -- -- --
 from core.utils import utils
 
@@ -72,11 +73,15 @@ class sx127xRegs(object):
    REG_AGC_THRESH_2 = 0x63
    REG_AGC_THRESH_3 = 0x64
    REG_PLL = 0x70
+   CMD_FRQ_HZ: int = 200
 
    def __init__(self, spi: spidev.SpiDev):
       self.spi: spidev.SpiDev = spi
       self.rd_thrd: th.Thread = th.Thread(target=self._rd_thread)
       self.wr_thrd: th.Thread = th.Thread(target=self._wr_thread)
+      self.cmds_in: deque = deque()
+      self.cmds_out: deque = deque()
+      self.rd_wr_sleep: float = (1 / sx127xRegs.CMD_FRQ_HZ)
 
    def init(self):
       try:
@@ -126,13 +131,16 @@ class sx127xRegs(object):
       # -- -- -- --
       while True:
          __th_thick()
-         time.sleep(0.001)
+         time.sleep(self.rd_wr_sleep)
 
    def _wr_thread(self):
       print("[ _wr_thread ]")
       def __th_thick():
-         pass
+         if len(self.cmds_in) == 0:
+            return
+         cmd_arr = self.cmds_in.popleft()
+         print(cmd_arr)
       # -- -- -- --
       while True:
          __th_thick()
-         time.sleep(0.001)
+         time.sleep(self.rd_wr_sleep)

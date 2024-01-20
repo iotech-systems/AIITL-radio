@@ -21,9 +21,9 @@ class sxOps(object):
       self.spidev: sp.SpiDev = spi
       self.sxchip: sx127x = t.Any
 
-   def init(self):
-      # self.sxchip = sx127x(self.spidev, self.r)
-      pass
+   def init(self) -> bool:
+      self.sxchip = sx127x("CLIv0", self.spidev, rst_pin=0, cs_pin=0)
+      return True
 
    # -- cls input --
    @staticmethod
@@ -121,7 +121,7 @@ class cli(object):
       self.spidev: sp.SpiDev = t.Any
       self.sxops: sxOps = t.Any
 
-   def run_init(self):
+   def run_spi_init(self) -> bool:
       try:
          sxOps.cls()
          self.__ver_head()
@@ -142,7 +142,7 @@ class cli(object):
          self.spidev.close()
          _cmd: str = f"spi-config -d /dev/spidev{self.bus_id}.{self.bus_dev} -q"
          print(os.popen(_cmd).read())
-         self.initOK = True
+         return True
       except Exception as e:
          print(e)
       finally:
@@ -164,12 +164,11 @@ class cli(object):
       self.sxops.run(tokens=toks)
 
    def main(self):
-      def __loop_tick():
+      if not self.initOK:
+         self.run_spi_init()
+      # -- -- -- --
+      def __cmd_loop_tick():
          try:
-            if not self.initOK:
-               self.run_init()
-               self.sxops = sxOps(spi=self.spidev)
-            # -- -- -- --
             self.__ver_head()
             _input = input("xscli: ").strip()
             if _input in self.arrows:
@@ -180,7 +179,7 @@ class cli(object):
             print(e)
       # -- -- -- --
       while True:
-        __loop_tick()
+        __cmd_loop_tick()
 
    def __ver_head(self):
       msg: str = f"\n[ sxcli | ver.: {VER} ]\n"
