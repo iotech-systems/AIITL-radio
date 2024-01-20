@@ -104,7 +104,7 @@ class sx127x(sxBase):
          self.cs_pin.off()
          if time.time() - _t > 4:
             return None
-         print(f"[ ver: {self._ver} | hex: 0x{self._ver:02X} ]")
+         # print(f"[ ver: {self._ver} | hex: 0x{self._ver:02X} ]")
       return self._ver
 
    def __set_cs(self, val: bool):

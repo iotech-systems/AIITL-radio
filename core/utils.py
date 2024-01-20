@@ -21,4 +21,4 @@ class utils(object):
 
    @staticmethod
    def trace_dbg(msg: str):
-      print(colored(f"{msg}", color=TCOLORS.grey.name))
+      print(colored(f"{msg}", color=TCOLORS.light_grey.name))
