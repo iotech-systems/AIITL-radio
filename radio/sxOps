@@ -123,6 +123,7 @@ class cli(object):
 
    def run_init(self):
       try:
+
          _in = input("enter spi info -> rst_pin cs_pin bus_id bus_dev bus_hz: ")
          _args: [] = [a.strip() for a in _in.split(" ")]
          if len(_args) != 5:
@@ -166,15 +167,15 @@ class cli(object):
          try:
             msg: str = f"\n[ sxcli | ver.: {VER} ]\n"
             print(colored(msg, color=TCOLORS.light_blue.name))
+            if not self.initOK:
+               self.run_init()
+               self.sxops = sxOps(spi=self.spidev)
+            # -- -- -- --
             _input = input("xscli: ").strip()
             if _input in self.arrows:
                return
             # -- --
-            if self.initOK:
-               self.run_cmd(_input)
-            else:
-               self.run_init()
-               self.sxops = sxOps(spi=self.spidev)
+            self.run_cmd(_input)
          except Exception as e:
             print(e)
       # -- -- -- --
