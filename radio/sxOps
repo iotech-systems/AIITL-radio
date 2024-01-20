@@ -117,9 +117,11 @@ class cli(object):
       self.bus_dev = int(bdev)
       self.bus_hz = int(bhz)
       self.spidev = sp.SpiDev()
+      self.spidev.open(self.bus_id, self.bus_dev)
+      self.spidev.max_speed_hz = self.bus_hz
+      self.spidev.close()
       _cmd: str = f"spi-config -d /dev/spidev{self.bus_id}.{self.bus_dev} -q"
-      buff = os.popen(_cmd).read()
-      print(buff)
+      print(os.popen(_cmd).read())
 
    def run_cmd(self, buff: str):
       if buff == "!q":
