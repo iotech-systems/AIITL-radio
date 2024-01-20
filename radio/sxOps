@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
+import spidev as sp
 import os, sys, typing as t
 from termcolor import colored
-import spidev as sp
 sys.path.insert(0, "../")
 # -- system --
 from core.utils import utils
@@ -18,7 +18,6 @@ class sxOps(object):
 
    def __init__(self, spi: sp.SpiDev):
       self.spidev: sp.SpiDev = spi
-      # self._sx127x: sx127x = sx127x(
 
    # -- cls input --
    @staticmethod
@@ -29,7 +28,7 @@ class sxOps(object):
    # --- GETs / READs --- #
 
    # -- read reg --
-   def read_reg(self):
+   def get_reg(self):
       print("read_reg")
 
    def get_ver(self):
@@ -46,17 +45,18 @@ class sxOps(object):
          return 1
       # -- -- -- --
       b_id, b_dev, b_hz = tks
-
       print(f"SPI.init: {self.lora_spi.init_code}")
       b, d = self.lora_spi.bus, self.lora_spi.bus_dev
       buff = os.popen(f"spi-config -d /dev/spidev{b}.{d} -q").read()
       print(buff)
 
    def run_sets(self, tks: []):
-      pass
+      cmd_str: str = f"set_{tks[0]}"
+      print(cmd_str)
 
    def run_gets(self, tks: []):
-      pass
+      cmd_str: str = f"set_{tks[0]}"
+      print(cmd_str)
 
    def run_misc(self, tks: []):
       pass
@@ -109,13 +109,16 @@ class cli(object):
       if buff in ["cls"]:
          sxOps.cls()
          return
+      # -- make toks --
+      toks: [] = [arg.strip() for arg in buff.split(" ")]
       # -- check spi --
       if self.spidev == t.Any:
-         print("run: set_spi x y z")
-         return
-      # -- run command --
-      print(colored(f">> {buff} <<", color=TCOLORS.green.name))
-      self.sxops.run([arg.strip() for arg in buff.split(" ")])
+         _in = input("enter spi info - bus_id bus_dev bus_hz:")
+         self.sxops.run(tokens=["set", "spi"].extend([a.strip() for a in _in.split(" ")]))
+      else:
+         # -- run command --
+         print(colored(f">> {buff} <<", color=TCOLORS.green.name))
+         self.sxops.run(tokens=toks)
 
    def main(self):
       # -- -- -- --
