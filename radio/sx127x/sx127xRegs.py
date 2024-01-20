@@ -1,5 +1,9 @@
 
-import spidev
+import spidev, time
+import threading as th
+# -- -- -- --
+from core.utils import utils
+
 
 R_MASK: int = 0x7f
 W_MASK: int = 0x80
@@ -71,6 +75,17 @@ class sx127xRegs(object):
 
    def __init__(self, spi: spidev.SpiDev):
       self.spi: spidev.SpiDev = spi
+      self.rd_thrd: th.Thread = th.Thread(target=self._rd_thread)
+      self.wr_thrd: th.Thread = th.Thread(target=self._wr_thread)
+
+   def init(self):
+      try:
+         self.rd_thrd.start()
+         self.wr_thrd.start()
+      except Exception as e:
+         utils.log_err(e)
+      finally:
+         pass
 
    def set_bits(self, address: int, data: int
          , position: int, length: int):
@@ -103,3 +118,21 @@ class sx127xRegs(object):
       if len(_tup) == 2:
          return _tup[1]
       return -1
+
+   def _rd_thread(self):
+      print("[ _rd_thread ]")
+      def __th_thick():
+         pass
+      # -- -- -- --
+      while True:
+         __th_thick()
+         time.sleep(0.001)
+
+   def _wr_thread(self):
+      print("[ _wr_thread ]")
+      def __th_thick():
+         pass
+      # -- -- -- --
+      while True:
+         __th_thick()
+         time.sleep(0.001)

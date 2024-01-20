@@ -2,6 +2,7 @@
 import spidev as sd
 import time, platform
 import os, typing as t
+import threading as th
 # -- -- -- --
 if "arm" in platform.machine():
    import RPi.GPIO as GPIO
