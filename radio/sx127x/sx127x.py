@@ -94,7 +94,7 @@ class sx127x(sxBase):
       time.sleep(0.008)
 
    @property
-   def ver(self):
+   def ver(self) -> t.Optional[int | None]:
       _t = time.time()
       while self._ver not in [xc.CHIP_VER_0x12, xc.CHIP_VER_0x22]:
          self.cs_pin.on()
@@ -103,9 +103,9 @@ class sx127x(sxBase):
          self.regs.spi.close()
          self.cs_pin.off()
          if time.time() - _t > 4:
-            return False
+            return None
          print(f"[ ver: {self._ver} | hex: 0x{self._ver:02X} ]")
-      return True
+      return self._ver
 
    def __set_cs(self, val: bool):
       GPIO.output(self.cs_pin, val)

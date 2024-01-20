@@ -112,10 +112,10 @@ class sx127xRegs(object):
    # -- private -- #
 
    def _tfer(self, address: int, data: int) -> tuple:
-      print(f"[ spi sending: {[address, data]} ]")
+      utils.trace_dbg(f"[ spi sending: {[address, data]} ]")
       buff_arr = [address, data]
       rval: () = self.spi.xfer2(buff_arr)
-      print(f"[ rval: {rval}]")
+      utils.trace_dbg(f"[ rval: {rval}]")
       return rval
 
    @staticmethod
