@@ -106,14 +106,15 @@ class sx127xConfOps(object):
       self.regs.set_bits(self.regs.REG_MODEM_CONFIG_1, bwCfg, 4, 4)
 
    def setRxGain(self, boost: int, level: int):
+      utils.trace_dbg("[ setRxGain ]")
       # valid RX gain level 0 - 6 (0 -> AGC on)
       level = 6 if level > 6 else level
       # boost LNA and automatic gain controller config
       # LnaBoostHf = 0x00 # if boost:
       LnaBoostHf = 0x03 if boost else 0x00
-      AgcOn = 0x00
-      if level == xc.RX_GAIN_AUTO:
-         AgcOn = 0x01
+      # AgcOn = 0x00
+      AgcOn = 0x01 if level == xc.RX_GAIN_AUTO else 0x00
+      # AgcOn = 0x01
       # set gain and boost LNA config
       self.regs.set_reg(self.regs.REG_LNA, LnaBoostHf | (level << 5))
       # enable or disable AGC
