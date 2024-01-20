@@ -161,7 +161,8 @@ class cli(object):
       # -- make toks --
       toks: [] = [arg.strip() for arg in buff.split(" ")]
       # -- run command --
-      self.sxops or sxOps(spi=self.spidev)
+      if self.sxops in [t.Any, None]:
+         self.sxops = sxOps(spi=self.spidev, rst_pin=self.rst_pin, cs_pin=self.cs_pin)
       print(colored(f">> {buff} <<", color=TCOLORS.green.name))
       self.sxops.run(tokens=toks)
 
