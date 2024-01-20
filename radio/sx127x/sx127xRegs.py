@@ -113,7 +113,10 @@ class sx127xRegs(object):
    # -- private -- #
 
    def _tfer(self, address: int, data: int) -> tuple:
-      reg_name: str = sx127xRegEnum(address).name
+      if address & W_MASK == W_MASK:
+         reg_name: str = sx127xRegEnum(address & 0b01111111).name
+      else:
+         reg_name: str = sx127xRegEnum(address).name
       utils.trace_dbg(f"[ spi sending: {[reg_name, data]} ]")
       buff_arr = [address, data]
       rval: () = self.spi.xfer2(buff_arr)
