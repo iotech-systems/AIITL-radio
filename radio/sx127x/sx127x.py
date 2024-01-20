@@ -94,7 +94,7 @@ class sx127x(sxBase):
       time.sleep(0.008)
 
    @property
-   def ver(self) -> t.Optional[int | None]:
+   def ver(self) -> t.Optional[int]:
       _t = time.time()
       while self._ver not in [xc.CHIP_VER_0x12, xc.CHIP_VER_0x22]:
          self.cs_pin.on()
