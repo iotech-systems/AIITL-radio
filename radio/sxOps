@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import spidev as sp
+import spidev as sp, time
 import os, sys, typing as t
 from termcolor import colored
 sys.path.insert(0, "../")
@@ -19,6 +19,11 @@ class sxOps(object):
 
    def __init__(self, spi: sp.SpiDev):
       self.spidev: sp.SpiDev = spi
+      self.sxchip: sx127x = t.Any
+
+   def init(self):
+      # self.sxchip = sx127x(self.spidev, self.r)
+      pass
 
    # -- cls input --
    @staticmethod
@@ -33,7 +38,13 @@ class sxOps(object):
       print("get_reg")
 
    def get_ver(self, tks: [] = None):
-      print("get_ver!")
+      tt = time.time()
+      version = 0x00
+      while version != 0x12 and version != 0x22:
+         version = self.readRegister(self.REG_VERSION)
+         if time.time() - t > 1:
+            return False
+      return True
 
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
    # --- SETs --- #
@@ -96,9 +107,11 @@ class sxOps(object):
 #
 class cli(object):
 
+   cmd_hist: [] = []
+   arrows: [] = ["^[[A", "^[[B"]
+
    def __init__(self):
-      self.cmd_hist: [] = []
-      self.arrows: [] = ["^[[A", "^[[B"]
+      self.initOK: bool = False
       self.rst_pin: int = 0
       self.cs_pin: int = 0
       self.spi_hz: int = 0
@@ -108,7 +121,7 @@ class cli(object):
       self.spidev: sp.SpiDev = t.Any
       self.sxops: sxOps = t.Any
 
-   def init(self):
+   def run_init(self):
       _in = input("enter spi info -> rst_pin cs_pin bus_id bus_dev bus_hz: ")
       _args: [] = [a.strip() for a in _in.split(" ")]
       if len(_args) != 5:
@@ -137,15 +150,10 @@ class cli(object):
          return
       # -- make toks --
       toks: [] = [arg.strip() for arg in buff.split(" ")]
-      # -- check spi --
-      if self.spidev == t.Any:
-        self.init()
-        self.sxops = sxOps(spi=self.spidev)
-      else:
-         # -- run command --
-         self.sxops or sxOps(spi=self.spidev)
-         print(colored(f">> {buff} <<", color=TCOLORS.green.name))
-         self.sxops.run(tokens=toks)
+      # -- run command --
+      self.sxops or sxOps(spi=self.spidev)
+      print(colored(f">> {buff} <<", color=TCOLORS.green.name))
+      self.sxops.run(tokens=toks)
 
    def main(self):
       def __loop_tick():
@@ -156,7 +164,11 @@ class cli(object):
             if _input in self.arrows:
                return
             # -- --
-            self.run_cmd(_input)
+            if self.initOK:
+               self.run_cmd(_input)
+            else:
+               self.run_init()
+               self.sxops = sxOps(spi=self.spidev)
          except Exception as e:
             print(e)
       # -- -- -- --
