@@ -45,11 +45,14 @@ class sxOps(object):
          print(f"WrongArgCount: {token_cnt} | bid, bdev, rst_pin, ss_pin")
          return 1
       # -- -- -- --
-      b_id, b_dev, b_hz = tks
-      print(f"SPI.init: {self.lora_spi.init_code}")
-      b, d = self.lora_spi.bus, self.lora_spi.bus_dev
-      buff = os.popen(f"spi-config -d /dev/spidev{b}.{d} -q").read()
-      print(buff)
+      b_id, b_dev, b_hz = [int(tk) for tk in tks]
+      print("[ PRE ]")
+      print(os.popen(f"spi-config -d /dev/spidev{b_id}.{b_dev} -q").read())
+      self.spidev.open(b_id, b_dev)
+      self.spidev.max_speed_hz = b_hz
+      self.spidev.close()
+      print("[ POST ]")
+      print(os.popen(f"spi-config -d /dev/spidev{b_id}.{b_dev} -q").read())
 
    def run_sets(self, tks: []):
       cmd_str: str = f"{tks[0]}_{tks[1]}"
@@ -110,6 +113,7 @@ class cli(object):
       _args: [] = [a.strip() for a in _in.split(" ")]
       if len(_args) != 5:
          raise RuntimeError("BadInput")
+      # -- -- -- --
       rst_pin, cs_pin, bid, bdev, bhz = _args
       self.rst_pin = int(rst_pin)
       self.cs_pin = int(cs_pin)
@@ -144,7 +148,6 @@ class cli(object):
          self.sxops.run(tokens=toks)
 
    def main(self):
-      # -- -- -- --
       def __loop_tick():
          try:
             msg: str = f"\n[ sxcli | ver.: {VER} ]\n"
@@ -152,14 +155,13 @@ class cli(object):
             _input = input("xscli: ").strip()
             if _input in self.arrows:
                return
-            # -- -- -- --
+            # -- --
             self.run_cmd(_input)
          except Exception as e:
             print(e)
       # -- -- -- --
       while True:
         __loop_tick()
-      # -- -- -- --
 
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
