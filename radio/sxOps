@@ -123,8 +123,10 @@ class cli(object):
 
    def run_init(self):
       try:
-
-         _in = input("enter spi info -> rst_pin cs_pin bus_id bus_dev bus_hz: ")
+         self.sxops.cls()
+         msg: str = f"\n[ sxcli | ver.: {VER} ]\n"
+         print(colored(msg, color=TCOLORS.light_blue.name))
+         _in = input("[ enter spi info ] -> rst_pin cs_pin bus_id bus_dev bus_hz: ")
          _args: [] = [a.strip() for a in _in.split(" ")]
          if len(_args) != 5:
             raise RuntimeError("BadInput")
@@ -165,8 +167,7 @@ class cli(object):
    def main(self):
       def __loop_tick():
          try:
-            msg: str = f"\n[ sxcli | ver.: {VER} ]\n"
-            print(colored(msg, color=TCOLORS.light_blue.name))
+            self.__ver_head()
             if not self.initOK:
                self.run_init()
                self.sxops = sxOps(spi=self.spidev)
@@ -181,6 +182,10 @@ class cli(object):
       # -- -- -- --
       while True:
         __loop_tick()
+
+   def __ver_head(self):
+      msg: str = f"\n[ sxcli | ver.: {VER} ]\n"
+      print(colored(msg, color=TCOLORS.light_blue.name))
 
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
