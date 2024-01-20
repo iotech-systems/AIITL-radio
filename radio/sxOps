@@ -7,6 +7,7 @@ sys.path.insert(0, "../")
 # -- system --
 from core.utils import utils
 from core.enums import TCOLORS
+from radio.sx127x.pinX import pinX
 from radio.sx127x.sx127xRegs import sx127xRegs
 from radio.sx127x.sx127x import sx127x
 
@@ -98,8 +99,27 @@ class cli(object):
       self.rst_pin: int = 0
       self.cs_pin: int = 0
       self.spi_hz: int = 0
+      self.bus_id: int = 0
+      self.bus_dev: int = 0
+      self.bus_hz: int = 0
       self.spidev: sp.SpiDev = t.Any
       self.sxops: sxOps = t.Any
+
+   def init(self):
+      _in = input("enter spi info -> rst_pin cs_pin bus_id bus_dev bus_hz: ")
+      _args: [] = [a.strip() for a in _in.split(" ")]
+      if len(_args) != 5:
+         raise RuntimeError("BadInput")
+      rst_pin, cs_pin, bid, bdev, bhz = _args
+      self.rst_pin = int(rst_pin)
+      self.cs_pin = int(cs_pin)
+      self.bus_id = int(bid)
+      self.bus_dev = int(bdev)
+      self.bus_hz = int(bhz)
+      self.spidev = sp.SpiDev()
+      _cmd: str = f"spi-config -d /dev/spidev{self.bus_id}.{self.bus_dev} -q"
+      buff = os.popen(_cmd).read()
+      print(buff)
 
    def run_cmd(self, buff: str):
       if buff == "!q":
@@ -113,8 +133,7 @@ class cli(object):
       toks: [] = [arg.strip() for arg in buff.split(" ")]
       # -- check spi --
       if self.spidev == t.Any:
-         _in = input("enter spi info - bus_id bus_dev bus_hz:")
-         self.sxops.run(tokens=["set", "spi"].extend([a.strip() for a in _in.split(" ")]))
+        self.init()
       else:
          # -- run command --
          print(colored(f">> {buff} <<", color=TCOLORS.green.name))
