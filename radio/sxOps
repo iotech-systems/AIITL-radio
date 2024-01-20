@@ -29,11 +29,11 @@ class sxOps(object):
    # --- GETs / READs --- #
 
    # -- read reg --
-   def get_reg(self):
-      print("read_reg")
+   def get_reg(self, tks: []):
+      print("get_reg")
 
-   def get_ver(self):
-      pass
+   def get_ver(self, tks: [] = None):
+      print("get_ver!")
 
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
    # --- SETs --- #
