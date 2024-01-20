@@ -145,6 +145,7 @@ class cli(object):
          return True
       except Exception as e:
          print(e)
+         return False
       finally:
          pass
 
@@ -165,7 +166,9 @@ class cli(object):
 
    def main(self):
       if not self.initOK:
-         self.run_spi_init()
+         spi_init: bool = self.run_spi_init()
+         if spi_init:
+            self.sxops = sxOps(spi=self.spidev)
       # -- -- -- --
       def __cmd_loop_tick():
          try:
