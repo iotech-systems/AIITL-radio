@@ -52,11 +52,11 @@ class sxOps(object):
       print(buff)
 
    def run_sets(self, tks: []):
-      cmd_str: str = f"set_{tks[0]}"
+      cmd_str: str = f"{tks[0]}_{tks[1]}"
       print(cmd_str)
 
    def run_gets(self, tks: []):
-      cmd_str: str = f"set_{tks[0]}"
+      cmd_str: str = f"{tks[0]}_{tks[1]}"
       print(cmd_str)
 
    def run_misc(self, tks: []):
