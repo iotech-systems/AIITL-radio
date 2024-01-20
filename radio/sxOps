@@ -26,6 +26,7 @@ class sxOps(object):
    def init(self) -> bool:
       self.sxchip = sx127x("CLIv0", self.spidev
          , rst_pin=self.rst_pin, cs_pin=self.cs_pin)
+      self.sxchip.init()
       self.sxchip.reset()
       return True
 

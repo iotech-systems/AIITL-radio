@@ -28,7 +28,9 @@ class sx127x(sxBase):
       self.chip_id: str = chip_id
       self.spidev: sd.SpiDev = spi
       self.rst_pin: pinX = pinX("RST_PIN", rst_pin, GPIO.OUT)
+      self.rst_pin.init()
       self.cs_pin: pinX = pinX("CS_PIN", cs_pin, GPIO.OUT)
+      self.cs_pin.init()
       # -- pins in org. code --
       self._txen = None
       self._rxen = None
