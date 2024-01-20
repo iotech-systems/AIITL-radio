@@ -39,10 +39,10 @@ class sxOps(object):
 
    def get_ver(self, tks: [] = None):
       tt = time.time()
-      version = 0x00
-      while version != 0x12 and version != 0x22:
-         version = self.readRegister(self.REG_VERSION)
-         if time.time() - t > 1:
+      ver = 0x00
+      while ver != 0x12 and ver != 0x22:
+         ver = self.readRegister(self.REG_VERSION)
+         if time.time() - tt > 4:
             return False
       return True
 
@@ -122,23 +122,29 @@ class cli(object):
       self.sxops: sxOps = t.Any
 
    def run_init(self):
-      _in = input("enter spi info -> rst_pin cs_pin bus_id bus_dev bus_hz: ")
-      _args: [] = [a.strip() for a in _in.split(" ")]
-      if len(_args) != 5:
-         raise RuntimeError("BadInput")
-      # -- -- -- --
-      rst_pin, cs_pin, bid, bdev, bhz = _args
-      self.rst_pin = int(rst_pin)
-      self.cs_pin = int(cs_pin)
-      self.bus_id = int(bid)
-      self.bus_dev = int(bdev)
-      self.bus_hz = int(bhz)
-      self.spidev = sp.SpiDev()
-      self.spidev.open(self.bus_id, self.bus_dev)
-      self.spidev.max_speed_hz = self.bus_hz
-      self.spidev.close()
-      _cmd: str = f"spi-config -d /dev/spidev{self.bus_id}.{self.bus_dev} -q"
-      print(os.popen(_cmd).read())
+      try:
+         _in = input("enter spi info -> rst_pin cs_pin bus_id bus_dev bus_hz: ")
+         _args: [] = [a.strip() for a in _in.split(" ")]
+         if len(_args) != 5:
+            raise RuntimeError("BadInput")
+         # -- -- -- --
+         rst_pin, cs_pin, bid, bdev, bhz = _args
+         self.rst_pin = int(rst_pin)
+         self.cs_pin = int(cs_pin)
+         self.bus_id = int(bid)
+         self.bus_dev = int(bdev)
+         self.bus_hz = int(bhz)
+         self.spidev = sp.SpiDev()
+         self.spidev.open(self.bus_id, self.bus_dev)
+         self.spidev.max_speed_hz = self.bus_hz
+         self.spidev.close()
+         _cmd: str = f"spi-config -d /dev/spidev{self.bus_id}.{self.bus_dev} -q"
+         print(os.popen(_cmd).read())
+         self.initOK = True
+      except Exception as e:
+         print(e)
+      finally:
+         pass
 
    def run_cmd(self, buff: str):
       if buff == "!q":
