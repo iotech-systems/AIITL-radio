@@ -53,11 +53,11 @@ class sxOps(object):
 
    def run_sets(self, tks: []):
       cmd_str: str = f"{tks[0]}_{tks[1]}"
-      print(cmd_str)
+      self._run_cmd(cmd_str, tks[2:])
 
    def run_gets(self, tks: []):
       cmd_str: str = f"{tks[0]}_{tks[1]}"
-      print(cmd_str)
+      self._run_cmd(cmd_str, tks[2:])
 
    def run_misc(self, tks: []):
       pass
@@ -67,26 +67,26 @@ class sxOps(object):
    def run(self, tokens: []):
       try:
          # -- -- -- --
-         cmd_call_name: str = str(tokens[0]).strip().upper()
-         if cmd_call_name == "SET":
+         call_type: str = str(tokens[0]).strip().upper()
+         if call_type == "SET":
             self.run_sets(tokens)
-         elif cmd_call_name == "GET":
+         elif call_type == "GET":
             self.run_gets(tokens)
          else:
             self.run_misc(tokens)
-         # -- -- -- --
-         cmd_object = getattr(self, cmd_call_name, None)
-         if cmd_object is None:
-            print(f"AttrNotFound: {cmd_call_name}")
-            return 2
-         # -- -- -- --
-         cmd_call = getattr(self, cmd_call_name)
-         cmd_call(tokens[1:])
       except Exception as e:
          utils.log_err(e)
       finally:
          pass
 
+   def _run_cmd(self, call_name, tks: []):
+      cmd_object = getattr(self, call_name, None)
+      if cmd_object is None:
+         print(f"AttrNotFound: {call_name}")
+         return 2
+      # -- -- -- --
+      cmd_call = getattr(self, call_name)
+      cmd_call(tks)
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # -- cli class --
