@@ -170,7 +170,7 @@ class cli(object):
       if not self.initOK:
          spi_init: bool = self.run_spi_init()
          if spi_init:
-            self.sxops = sxOps(spi=self.spidev, )
+            self.sxops = sxOps(spi=self.spidev, rst_pin=self.rst_pin, cs_pin=self.cs_pin)
             self.sxops.init()
       # -- -- -- --
       def __cmd_loop_tick():
