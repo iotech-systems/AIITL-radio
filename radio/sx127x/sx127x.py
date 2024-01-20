@@ -97,7 +97,11 @@ class sx127x(sxBase):
    def ver(self):
       _t = time.time()
       while self._ver not in [xc.CHIP_VER_0x12, xc.CHIP_VER_0x22]:
+         self.cs_pin.on()
+         self.regs.spi.open(0, 0)
          self._ver = self.regs.get_reg(self.regs.REG_VERSION)
+         self.regs.spi.close()
+         self.cs_pin.off()
          if time.time() - _t > 4:
             return False
          print(f"[ ver: {self._ver} | hex: 0x{self._ver:02X} ]")

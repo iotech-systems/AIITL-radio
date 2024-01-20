@@ -66,6 +66,7 @@ class sxOps(object):
       self.spidev.close()
       print("[ POST ]")
       print(os.popen(f"spi-config -d /dev/spidev{b_id}.{b_dev} -q").read())
+      self.sxchip.spidev = self.spidev
 
    def run_sets(self, tks: []):
       cmd_str: str = f"{tks[0]}_{tks[1]}"
