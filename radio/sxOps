@@ -136,8 +136,10 @@ class cli(object):
       # -- check spi --
       if self.spidev == t.Any:
         self.init()
+        self.sxops = sxOps(spi=self.spidev)
       else:
          # -- run command --
+         self.sxops or sxOps(spi=self.spidev)
          print(colored(f">> {buff} <<", color=TCOLORS.green.name))
          self.sxops.run(tokens=toks)
 
