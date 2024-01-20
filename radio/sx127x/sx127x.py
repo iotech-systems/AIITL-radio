@@ -1,4 +1,4 @@
-
+import spidev
 import spidev as sd
 import time, platform
 import os, typing as t
@@ -24,9 +24,9 @@ GPIO.setmode(GPIO.BCM)
 
 class sx127x(sxBase):
 
-   def __init__(self, chip_id: str, rst_pin: int, cs_pin: int):
+   def __init__(self, chip_id: str, spi: sd.SpiDev, rst_pin: int, cs_pin: int):
       self.chip_id: str = chip_id
-      self.spidev: sd.SpiDev = sd.SpiDev()
+      self.spidev: sd.SpiDev = spi
       self.rst_pin: pinX = pinX("RST_PIN", rst_pin, GPIO.OUT)
       self.cs_pin: pinX = pinX("CS_PIN", cs_pin, GPIO.OUT)
       # -- pins in org. code --
@@ -59,6 +59,7 @@ class sx127x(sxBase):
       # # Operation properties
       # _monitoring = None
       # _payloadTxRx = 32
+      self._ver: int = 0x00
       self.conf: sx127xConfOps = t.Any
       self._statusWait = xc.STATUS_DEFAULT
       self._statusIrq = xc.STATUS_DEFAULT
@@ -90,14 +91,14 @@ class sx127x(sxBase):
       self.rst_pin.on()
       time.sleep(0.008)
 
-   def chip_ver(self):
-      ver = 0x00
+   @property
+   def ver(self):
       _t = time.time()
-      while ver not in [xc.CHIP_VER_0x12, xc.CHIP_VER_0x22]:
-         ver = self.regs.get_reg(self.regs.REG_VERSION)
+      while self._ver not in [xc.CHIP_VER_0x12, xc.CHIP_VER_0x22]:
+         self._ver = self.regs.get_reg(self.regs.REG_VERSION)
          if time.time() - _t > 4:
             return False
-         print(f"[ ver: {ver} | hex: 0x{ver:02X} ]")
+         print(f"[ ver: {self._ver} | hex: 0x{self._ver:02X} ]")
       return True
 
    def __set_cs(self, val: bool):

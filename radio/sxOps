@@ -17,12 +17,16 @@ VER: str = "2024.01.18.01"
 
 class sxOps(object):
 
-   def __init__(self, spi: sp.SpiDev):
+   def __init__(self, spi: sp.SpiDev, rst_pin: int, cs_pin: int):
       self.spidev: sp.SpiDev = spi
       self.sxchip: sx127x = t.Any
+      self.rst_pin: int = rst_pin
+      self.cs_pin: int = cs_pin
 
    def init(self) -> bool:
-      self.sxchip = sx127x("CLIv0", self.spidev, rst_pin=0, cs_pin=0)
+      self.sxchip = sx127x("CLIv0", self.spidev
+         , rst_pin=self.rst_pin, cs_pin=self.cs_pin)
+      self.sxchip.reset()
       return True
 
    # -- cls input --
@@ -38,12 +42,9 @@ class sxOps(object):
       print("get_reg")
 
    def get_ver(self, tks: [] = None):
-      tt = time.time()
-      ver = 0x00
-      while ver != 0x12 and ver != 0x22:
-         ver = self.readRegister(self.REG_VERSION)
-         if time.time() - tt > 4:
-            return False
+      self.sxchip.reset()
+      ver = self.sxchip.ver
+      print(f"chip ver: {ver}")
       return True
 
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -168,7 +169,8 @@ class cli(object):
       if not self.initOK:
          spi_init: bool = self.run_spi_init()
          if spi_init:
-            self.sxops = sxOps(spi=self.spidev)
+            self.sxops = sxOps(spi=self.spidev, )
+            self.sxops.init()
       # -- -- -- --
       def __cmd_loop_tick():
          try:
