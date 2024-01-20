@@ -4,6 +4,7 @@ import threading as th
 from collections import deque
 # -- -- -- --
 from core.utils import utils
+from .sx127xEnums import sx127xRegEnum
 
 
 R_MASK: int = 0x7f
@@ -112,7 +113,8 @@ class sx127xRegs(object):
    # -- private -- #
 
    def _tfer(self, address: int, data: int) -> tuple:
-      utils.trace_dbg(f"[ spi sending: {[address, data]} ]")
+      reg_name: str = sx127xRegEnum(address).name
+      utils.trace_dbg(f"[ spi sending: {[reg_name, data]} ]")
       buff_arr = [address, data]
       rval: () = self.spi.xfer2(buff_arr)
       utils.trace_dbg(f"[ rval: {rval}]")

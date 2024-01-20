@@ -4,6 +4,7 @@ from core.utils import utils
 from .sx127xRegs import sx127xRegs
 from .sx127xConsts import sx127xConsts as xc
 from .sx127xRecOps import sx127xRecOps
+from .sx127xEnums import sx127xRegEnum
 
 
 class sx127xConfOps(object):
@@ -45,7 +46,7 @@ class sx127xConfOps(object):
          raise f"BadModemSetting: {modem}"
       self._modem = xc.LONG_RANGE_MODE
       time.sleep(0.002)
-      self.regs.set_reg(self.regs.REG_OP_MODE, self._modem | xc.MODE_STDBY)
+      self.regs.set_reg(sx127xRegEnum.REG_OP_MODE, self._modem | xc.MODE_STDBY)
       return True
 
    # maximum TX power is 20 dBm and 14 dBm for RFO pin
@@ -78,9 +79,9 @@ class sx127xConfOps(object):
             outputPower = txPower - 2
             self.setCurrentProtection(140)  # max current 140 mA
          # enable or disable +20 dBm option on PA_BOOST pin
-         self.regs.set_reg(self.regs.REG_PA_DAC, paDac)
+         self.regs.set_reg(sx127xRegEnum.REG_PA_DAC, paDac)
       # -- set PA config --
-      self.regs.set_reg(self.regs.REG_PA_CONFIG, paConfig | outputPower)
+      self.regs.set_reg(sx127xRegEnum.REG_PA_CONFIG, paConfig | outputPower)
 
    def setBandwidth(self, bw: int):
       self._bw = bw
@@ -103,7 +104,7 @@ class sx127xConfOps(object):
          bwCfg = 7      # 125 kHz
       elif bw < 375000:
          bwCfg = 8      # 250 kHz
-      self.regs.set_bits(self.regs.REG_MODEM_CONFIG_1, bwCfg, 4, 4)
+      self.regs.set_bits(sx127xRegEnum.REG_MODEM_CONFIG_1, bwCfg, 4, 4)
 
    def setRxGain(self, boost: int, level: int):
       utils.trace_dbg("[ setRxGain ]")
@@ -116,9 +117,9 @@ class sx127xConfOps(object):
       AgcOn = 0x01 if level == xc.RX_GAIN_AUTO else 0x00
       # AgcOn = 0x01
       # set gain and boost LNA config
-      self.regs.set_reg(self.regs.REG_LNA, LnaBoostHf | (level << 5))
+      self.regs.set_reg(sx127xRegEnum.REG_LNA, LnaBoostHf | (level << 5))
       # enable or disable AGC
-      self.regs.set_bits(self.regs.REG_MODEM_CONFIG_3, AgcOn, 2, 1)
+      self.regs.set_bits(sx127xRegEnum.REG_MODEM_CONFIG_3, AgcOn, 2, 1)
 
    def setLoRaModulation(self, sf: int, bw: int
          , cr: int, ldro: bool = False):

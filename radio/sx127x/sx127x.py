@@ -15,6 +15,7 @@ from .sx127xRegs import sx127xRegs
 from .sx127xConsts import sx127xConsts as xc
 from .sx127xRecOps import sx127xRecOps
 from .sx127xConfOps import sx127xConfOps
+from .sx127xEnums import sx127xRegEnum
 
 
 RF_FREQ: int = 433_000_000
@@ -106,7 +107,7 @@ class sx127x(sxBase):
       while self._ver not in [xc.CHIP_VER_0x12, xc.CHIP_VER_0x22]:
          self.cs_pin.on()
          self.regs.spi.open(self.bus_id, self.bus_dev)
-         self._ver = self.regs.get_reg(self.regs.REG_VERSION)
+         self._ver = self.regs.get_reg(sx127xRegEnum.REG_VERSION)
          self.regs.spi.close()
          self.cs_pin.off()
          if time.time() - _t > 4:
