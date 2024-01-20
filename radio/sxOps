@@ -22,10 +22,11 @@ class sxOps(object):
       self.sxchip: sx127x = t.Any
       self.rst_pin: int = rst_pin
       self.cs_pin: int = cs_pin
+      self.bus_id_dev: () = (0, 0)
 
    def init(self) -> bool:
       self.sxchip = sx127x("CLIv0", self.spidev
-         , rst_pin=self.rst_pin, cs_pin=self.cs_pin)
+         , spiinfo=self.bus_id_dev, rst_pin=self.rst_pin, cs_pin=self.cs_pin)
       self.sxchip.init()
       self.sxchip.reset()
       return True
@@ -169,6 +170,7 @@ class cli(object):
       # -- run command --
       if self.sxops in [t.Any, None]:
          self.sxops = sxOps(spi=self.spidev, rst_pin=self.rst_pin, cs_pin=self.cs_pin)
+         self.sxops.bus_id_dev = (self.bus_id, self.bus_dev)
       print(colored(f">> {buff} <<", color=TCOLORS.green.name))
       self.sxops.run(tokens=toks)
 

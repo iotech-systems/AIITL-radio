@@ -24,9 +24,12 @@ GPIO.setmode(GPIO.BCM)
 
 class sx127x(sxBase):
 
-   def __init__(self, chip_id: str, spi: sd.SpiDev, rst_pin: int, cs_pin: int):
+   def __init__(self, chip_id: str, spi: sd.SpiDev
+         , spiinfo: (int, int), rst_pin: int, cs_pin: int):
+      # -- -- -- --
       self.chip_id: str = chip_id
       self.spidev: sd.SpiDev = spi
+      self.bus_id, self.bus_dev = spiinfo
       self.rst_pin: pinX = pinX("RST_PIN", rst_pin, GPIO.OUT)
       self.rst_pin.init()
       self.cs_pin: pinX = pinX("CS_PIN", cs_pin, GPIO.OUT)
@@ -77,9 +80,13 @@ class sx127x(sxBase):
    def begin(self) -> bool:
       try:
          self.reset()
+         self.cs_pin.on()
+         self.spidev.open(self.bus_id, self.bus_dev)
          self.conf.setModem(xc.LORA_MODEM)
          self.conf.setTxPower(17, xc.TX_POWER_PA_BOOST)
          self.conf.setRxGain(xc.RX_GAIN_BOOSTED, xc.RX_GAIN_AUTO)
+         self.spidev.close()
+         self.cs_pin.off()
          return True
       except Exception as e:
          print(e)
@@ -98,7 +105,7 @@ class sx127x(sxBase):
       _t = time.time()
       while self._ver not in [xc.CHIP_VER_0x12, xc.CHIP_VER_0x22]:
          self.cs_pin.on()
-         self.regs.spi.open(0, 0)
+         self.regs.spi.open(self.bus_id, self.bus_dev)
          self._ver = self.regs.get_reg(self.regs.REG_VERSION)
          self.regs.spi.close()
          self.cs_pin.off()
