@@ -35,6 +35,9 @@ class sxOps(object):
    def cls():
       os.system("clear")
 
+   def begin(self, tks: [] = None):
+      self.sxchip.begin()
+
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
    # --- GETs / READs --- #
 
@@ -77,7 +80,8 @@ class sxOps(object):
       self._run_cmd(cmd_str, tks[2:])
 
    def run_misc(self, tks: []):
-      pass
+      cmd_name: str = tks[0]
+      self._run_cmd(cmd_name, tks[1:])
 
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
    # -- -- runner -- --
