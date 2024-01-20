@@ -125,7 +125,7 @@ class cli(object):
       try:
          sxOps.cls()
          self.__ver_head()
-         _in = input("[ enter spi info ] -> rst_pin cs_pin bus_id bus_dev bus_hz: ")
+         _in = input("[ INIT spi info ] -> rst_pin cs_pin bus_id bus_dev bus_hz: ")
          _args: [] = [a.strip() for a in _in.split(" ")]
          if len(_args) != 5:
             raise RuntimeError("BadInput")
