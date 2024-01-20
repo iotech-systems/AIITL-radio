@@ -1,5 +1,6 @@
 
 import time
+from core.utils import utils
 from .sx127xRegs import sx127xRegs
 from .sx127xConsts import sx127xConsts as xc
 from .sx127xRecOps import sx127xRecOps
@@ -22,6 +23,7 @@ class sx127xConfOps(object):
    """ set calls """
 
    def setCurrentProtection(self, current: int):
+      utils.trace_dbg("[ setCurrentProtection ]")
       # calculate ocp trim
       ocpTrim = 27
       if current <= 120:
@@ -38,7 +40,7 @@ class sx127xConfOps(object):
       self.regs.set_reg(self.regs.REG_TCXO, cfg)
 
    def setModem(self, modem: int) -> bool:
-      print("[ setModem ]")
+      utils.trace_dbg("[ setModem ]")
       if modem != xc.LORA_MODEM:
          raise f"BadModemSetting: {modem}"
       self._modem = xc.LONG_RANGE_MODE
@@ -48,6 +50,7 @@ class sx127xConfOps(object):
 
    # maximum TX power is 20 dBm and 14 dBm for RFO pin
    def setTxPower(self, txPower: int, paPin: int):
+      utils.trace_dbg("[ setTxPower ]")
       max_power: int = 14 if paPin == xc.TX_POWER_RFO else 20
       txPower = max_power if txPower > max_power else txPower
       # -- -- -- --
@@ -70,7 +73,8 @@ class sx127xConfOps(object):
             paDac = 0x07
             self.setCurrentProtection(100)  # max current 100 mA
          else:
-            if txPower < 2: txPower = 2
+            if txPower < 2:
+               txPower = 2
             outputPower = txPower - 2
             self.setCurrentProtection(140)  # max current 140 mA
          # enable or disable +20 dBm option on PA_BOOST pin
