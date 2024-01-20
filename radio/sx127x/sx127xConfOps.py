@@ -29,13 +29,13 @@ class sx127xConfOps(object):
       elif current <= 240:
          ocpTrim = int((current + 30) / 10)
       # set over-current protection config
-      self.regs.writeS(self.regs.REG_OCP, 0x20 | ocpTrim)
+      self.regs.set_reg(self.regs.REG_OCP, 0x20 | ocpTrim)
 
    def setOscillator(self, option: int):
       cfg = xc.OSC_CRYSTAL
       if option == xc.OSC_TCXO:
          cfg = xc.OSC_TCXO
-      self.regs.writeS(self.regs.REG_TCXO, cfg)
+      self.regs.set_reg(self.regs.REG_TCXO, cfg)
 
    def setModem(self, modem: int) -> bool:
       print("[ setModem ]")
@@ -43,7 +43,7 @@ class sx127xConfOps(object):
          raise f"BadModemSetting: {modem}"
       self._modem = xc.LONG_RANGE_MODE
       time.sleep(0.002)
-      self.regs.writeS(self.regs.REG_OP_MODE, self._modem | xc.MODE_STDBY)
+      self.regs.set_reg(self.regs.REG_OP_MODE, self._modem | xc.MODE_STDBY)
       return True
 
    # maximum TX power is 20 dBm and 14 dBm for RFO pin
@@ -74,9 +74,9 @@ class sx127xConfOps(object):
             outputPower = txPower - 2
             self.setCurrentProtection(140)  # max current 140 mA
          # enable or disable +20 dBm option on PA_BOOST pin
-         self.regs.writeS(self.regs.REG_PA_DAC, paDac)
+         self.regs.set_reg(self.regs.REG_PA_DAC, paDac)
       # -- set PA config --
-      self.regs.writeS(self.regs.REG_PA_CONFIG, paConfig | outputPower)
+      self.regs.set_reg(self.regs.REG_PA_CONFIG, paConfig | outputPower)
 
    def setBandwidth(self, bw: int):
       self._bw = bw
@@ -99,7 +99,7 @@ class sx127xConfOps(object):
          bwCfg = 7      # 125 kHz
       elif bw < 375000:
          bwCfg = 8      # 250 kHz
-      self.regs.writeBits(self.regs.REG_MODEM_CONFIG_1, bwCfg, 4, 4)
+      self.regs.set_bits(self.regs.REG_MODEM_CONFIG_1, bwCfg, 4, 4)
 
    def setRxGain(self, boost: int, level: int):
       # valid RX gain level 0 - 6 (0 -> AGC on)
@@ -111,9 +111,9 @@ class sx127xConfOps(object):
       if level == xc.RX_GAIN_AUTO:
          AgcOn = 0x01
       # set gain and boost LNA config
-      self.regs.writeS(self.regs.REG_LNA, LnaBoostHf | (level << 5))
+      self.regs.set_reg(self.regs.REG_LNA, LnaBoostHf | (level << 5))
       # enable or disable AGC
-      self.regs.writeBits(self.regs.REG_MODEM_CONFIG_3, AgcOn, 2, 1)
+      self.regs.set_bits(self.regs.REG_MODEM_CONFIG_3, AgcOn, 2, 1)
 
    def setLoRaModulation(self, sf: int, bw: int
          , cr: int, ldro: bool = False):
@@ -128,7 +128,7 @@ class sx127xConfOps(object):
       # if crcType:
       #    crcTypeCfg = 0x01
       crcTypeCfg: int = 0x00 if crcType else 0x00
-      self.regs.writeBits(self.regs.REG_MODEM_CONFIG_2, crcTypeCfg, 2, 1)
+      self.regs.set_bits(self.regs.REG_MODEM_CONFIG_2, crcTypeCfg, 2, 1)
 
    def setLoRaPacket(self, headerType: int, preambleLength: int
          , payloadLength: int, crcType: bool = False
