@@ -147,6 +147,7 @@ class sx127xConfOps(object):
       # self.setInvertIq(invertIq)
 
    def setSpreadingFactor(self, sf: int):
+      utils.trace_dbg("[ setSpreadingFactor ]")
       self.sf = sf
       # valid spreading factor is 6 - 12
       if sf < 6:
@@ -167,6 +168,7 @@ class sx127xConfOps(object):
       self.regs.set_bits(sx127xRegEnum.REG_MODEM_CONFIG_2, sf, 4, 4)
 
    def setFrequency(self, freq: int):
+      utils.trace_dbg("[ setFrequency ]")
       self._rf_freq = freq
       # calculate frequency
       frf = int((freq << 19) / 32000000)
@@ -176,6 +178,7 @@ class sx127xConfOps(object):
 
    # valid code rate denominator is 5 - 8
    def setCodeRate(self, cr: int):
+      utils.trace_dbg("[ setCodeRate ]")
       if cr < 5:
          cr = 4
       elif cr > 8:
