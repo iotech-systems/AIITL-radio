@@ -61,7 +61,9 @@ class sxOps(object):
 
    def get_ver(self, tks: [] = None):
       self.sxchip.reset()
+      self.sxchip.cs_on_open_spi()
       self.sxchip.conf.standby()
+      self.sxchip.cs_off_close_spi()
       ver = self.sxchip.ver
       print(f"chip ver: {ver}")
       return True
