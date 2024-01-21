@@ -74,7 +74,9 @@ class sxOps(object):
 
    def set_freq(self, tks: []):
       val: int = int(float(tks[0]))
+      self.sxchip.cs_on_open_spi()
       self.sxchip.conf.setFrequency(val)
+      self.sxchip.cs_off_close_spi()
 
    def set_bw(self, tks: []):
       val: int = int(tks[0])

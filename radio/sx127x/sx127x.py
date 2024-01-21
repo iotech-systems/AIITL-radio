@@ -282,3 +282,11 @@ class sx127x(sxBase):
    # get signal-to-noise ratio (SNR) of last incoming package
    def snr(self) -> float:
       return self.regs.get_reg(self.regs.REG_PKT_SNR_VALUE) / 4.0
+
+   def cs_on_open_spi(self):
+      self.cs_pin.on()
+      self.spidev.open(self.bus_id, self.bus_dev)
+
+   def cs_off_close_spi(self):
+      self.spidev.close()
+      self.cs_pin.off()
