@@ -72,16 +72,19 @@ class sxOps(object):
       print(os.popen(f"spi-config -d /dev/spidev{b_id}.{b_dev} -q").read())
       self.sxchip.spidev = self.spidev
 
-   def set_freq(self, freq: int):
-      self.sxchip.conf.setFrequency(freq)
+   def set_freq(self, tks: []):
+      val: int = int(tks[0])
+      self.sxchip.conf.setFrequency(val)
 
-   def set_bw(self, bw: int):
-      self.sxchip.conf.setBandwidth(bw)
+   def set_bw(self, tks: []):
+      val: int = int(tks[0])
+      self.sxchip.conf.setBandwidth(val)
 
-   def set_code_rate(self, cr: int):
-      self.sxchip.conf.setCodeRate(cr)
+   def set_code_rate(self, tks: []):
+      val: int = int(tks[0])
+      self.sxchip.conf.setCodeRate(val)
 
-   def set_frq_wb_cr(self, fr: int, bw: int ,cr: int):
+   def set_frq_wb_cr(self, fr: int, bw: int, cr: int):
       self.sxchip.conf.setFrequency(fr)
       self.sxchip.conf.setBandwidth(bw)
       self.sxchip.conf.setCodeRate(cr)
