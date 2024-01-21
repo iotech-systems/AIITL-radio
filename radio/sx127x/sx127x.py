@@ -81,13 +81,11 @@ class sx127x(sxBase):
    def begin(self) -> bool:
       try:
          self.reset()
-         self.cs_pin.on()
-         self.spidev.open(self.bus_id, self.bus_dev)
+         self.cs_on_open_spi()
          self.conf.setModem(xc.LORA_MODEM)
          self.conf.setTxPower(17, xc.TX_POWER_PA_BOOST)
          self.conf.setRxGain(xc.RX_GAIN_BOOSTED, xc.RX_GAIN_AUTO)
-         self.spidev.close()
-         self.cs_pin.off()
+         self.cs_off_close_spi()
          return True
       except Exception as e:
          print(e)
@@ -105,11 +103,9 @@ class sx127x(sxBase):
    def ver(self) -> t.Optional[int]:
       _t = time.time()
       while self._ver not in [xc.CHIP_VER_0x12, xc.CHIP_VER_0x22]:
-         self.cs_pin.on()
-         self.regs.spi.open(self.bus_id, self.bus_dev)
+         self.cs_on_open_spi()
          self._ver = self.regs.get_reg(sx127xRegEnum.REG_VERSION)
-         self.regs.spi.close()
-         self.cs_pin.off()
+         self.cs_off_close_spi()
          if time.time() - _t > 4:
             return None
          # print(f"[ ver: {self._ver} | hex: 0x{self._ver:02X} ]")
