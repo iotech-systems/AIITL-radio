@@ -73,7 +73,7 @@ class sxOps(object):
       self.sxchip.spidev = self.spidev
 
    def set_freq(self, tks: []):
-      val: int = int(tks[0])
+      val: int = int(float(tks[0]))
       self.sxchip.conf.setFrequency(val)
 
    def set_bw(self, tks: []):
