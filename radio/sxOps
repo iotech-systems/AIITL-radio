@@ -55,6 +55,10 @@ class sxOps(object):
       print(f"chip ver: {ver}")
       return True
 
+   def get_spi_info(self, tks: [] = None):
+      b_id, b_dev = self.bus_id_dev
+      print(os.popen(f"spi-config -d /dev/spidev{b_id}.{b_dev} -q").read())
+
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
    # --- SETs --- #
 
