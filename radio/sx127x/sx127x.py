@@ -106,9 +106,9 @@ class sx127x(sxBase):
          self.cs_on_open_spi()
          self._ver = self.regs.get_reg(sx127xRegEnum.REG_VERSION)
          self.cs_off_close_spi()
-         if time.time() - _t > 4:
+         if time.time() - _t > 8:
             return None
-         # print(f"[ ver: {self._ver} | hex: 0x{self._ver:02X} ]")
+         time.sleep(0.004)
       return self._ver
 
    def __set_cs(self, val: bool):
