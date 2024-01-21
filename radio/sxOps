@@ -23,12 +23,15 @@ class sxOps(object):
       self.rst_pin: int = rst_pin
       self.cs_pin: int = cs_pin
       self.bus_id_dev: () = (0, 0)
+      self.cli_calls: [] = []
 
    def init(self) -> bool:
       self.sxchip = sx127x("CLIv0", self.spidev
          , spiinfo=self.bus_id_dev, rst_pin=self.rst_pin, cs_pin=self.cs_pin)
       self.sxchip.init()
       self.sxchip.reset()
+      # -- load cli_calls --
+      self.cli_calls.extend([self.reset, self.begin])
       return True
 
    # -- cls input --
@@ -39,8 +42,14 @@ class sxOps(object):
    def begin(self, tks: [] = None):
       self.sxchip.begin()
 
-   def reset(self):
+   def reset(self, tks: [] = None):
       self.sxchip.reset()
+
+   def list_funcs(self, tks: [] = None):
+      for f in self.cli_calls:
+         if not callable(f):
+            continue
+         print(f"\tname: {f}")
 
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
    # --- GETs / READs --- #
