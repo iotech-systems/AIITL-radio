@@ -39,6 +39,9 @@ class sxOps(object):
    def begin(self, tks: [] = None):
       self.sxchip.begin()
 
+   def rest(self):
+      self.sxchip.reset()
+
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
    # --- GETs / READs --- #
 
