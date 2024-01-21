@@ -49,7 +49,8 @@ class sxOps(object):
       for f in self.cli_calls:
          if not callable(f):
             continue
-         print(f"\tname: {f}")
+         f: callable = f
+         print(f"\tname: {f.__name__}")
 
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
    # --- GETs / READs --- #
