@@ -39,7 +39,7 @@ class sxOps(object):
    def begin(self, tks: [] = None):
       self.sxchip.begin()
 
-   def rest(self):
+   def reset(self):
       self.sxchip.reset()
 
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
