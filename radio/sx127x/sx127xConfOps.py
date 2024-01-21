@@ -134,7 +134,7 @@ class sx127xConfOps(object):
       # if crcType:
       #    crcTypeCfg = 0x01
       crcTypeCfg: int = 0x00 if crcType else 0x00
-      self.regs.set_bits(self.regs.REG_MODEM_CONFIG_2, crcTypeCfg, 2, 1)
+      self.regs.set_bits(sx127xRegEnum.REG_MODEM_CONFIG_2, crcTypeCfg, 2, 1)
 
    def setLoRaPacket(self, headerType: int, preambleLength: int
          , payloadLength: int, crcType: bool = False
@@ -161,18 +161,18 @@ class sx127xConfOps(object):
          optimize = 0x05
          threshold = 0x0C
       # -- -- -- --
-      self.regs.writeS(self.regs.REG_DETECTION_OPTIMIZE, optimize)
-      self.regs.writeS(self.regs.REG_DETECTION_THRESHOLD, threshold)
+      self.regs.set_reg(sx127xRegEnum.REG_DETECTION_OPTIMIZE, optimize)
+      self.regs.set_reg(sx127xRegEnum.REG_DETECTION_THRESHOLD, threshold)
       # set spreading factor config
-      self.regs.writeBits(self.regs.REG_MODEM_CONFIG_2, sf, 4, 4)
+      self.regs.set_bits(sx127xRegEnum.REG_MODEM_CONFIG_2, sf, 4, 4)
 
    def setFrequency(self, freq: int):
       self._rf_freq = freq
       # calculate frequency
       frf = int((freq << 19) / 32000000)
-      self.regs.writeS(self.regs.REG_FRF_MSB, (frf >> 16) & 0xFF)
-      self.regs.writeS(self.regs.REG_FRF_MID, (frf >> 8) & 0xFF)
-      self.regs.writeS(self.regs.REG_FRF_LSB, frf & 0xFF)
+      self.regs.set_reg(sx127xRegEnum.REG_FRF_MSB, (frf >> 16) & 0xFF)
+      self.regs.set_reg(sx127xRegEnum.REG_FRF_MID, (frf >> 8) & 0xFF)
+      self.regs.set_reg(sx127xRegEnum.REG_FRF_LSB, frf & 0xFF)
 
    # valid code rate denominator is 5 - 8
    def setCodeRate(self, cr: int):
@@ -181,7 +181,7 @@ class sx127xConfOps(object):
       elif cr > 8:
          cr = 8
       # crCfg = (cr - 4)
-      self.regs.writeBits(self.regs.REG_MODEM_CONFIG_1, (cr - 4), 1, 3)
+      self.regs.set_bits(sx127xRegEnum.REG_MODEM_CONFIG_1, (cr - 4), 1, 3)
 
    def setLdroEnable(self, ldro: bool):
       # ldroCfg = 0x00

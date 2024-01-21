@@ -117,6 +117,7 @@ class sx127xRegs(object):
          reg_name: str = sx127xRegEnum(address & 0b01111111).name
       else:
          reg_name: str = sx127xRegEnum(address).name
+      # -- -- -- --
       utils.trace_dbg(f"[ spi sending: {[reg_name, data]} ]")
       buff_arr = [address, data]
       rval: () = self.spi.xfer2(buff_arr)

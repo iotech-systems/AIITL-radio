@@ -12,10 +12,10 @@ else:
 from .pinX import pinX
 from .sxBase import sxBase
 from .sx127xRegs import sx127xRegs
-from .sx127xConsts import sx127xConsts as xc
 from .sx127xRecOps import sx127xRecOps
-from .sx127xConfOps import sx127xConfOps
 from .sx127xEnums import sx127xRegEnum
+from .sx127xConfOps import sx127xConfOps
+from .sx127xConsts import sx127xConsts as xc
 
 
 RF_FREQ: int = 433_000_000
@@ -244,13 +244,15 @@ class sx127x(sxBase):
       # return self._statusWait
       pass
 
-   def onTransmit(self, callback: callable):
+   def onTransmit(self, callback=None):
       # register onTransmit function to call every transmit done
-      self._onTransmit = callback
+      if callable(callback):
+         self._onTransmit = callback
 
-   def onReceive(self, callback: callable):
+   def onReceive(self, callback=None):
       # register onReceive function to call every receive done
-      self._onReceive = callback
+      if callable(callback):
+         self._onReceive = callback
 
    def transmitTime(self) -> float:
       # get transmit time in millisecond (ms)
