@@ -191,26 +191,32 @@ class sx127xConfOps(object):
       # if ldro:
       #    ldroCfg = 0x01
       ldroCfg = 0x01 if ldro else 0x00
-      self.regs.writeBits(self.regs.REG_MODEM_CONFIG_3, ldroCfg, 3, 1)
+      self.regs.set_bits(self.regs.REG_MODEM_CONFIG_3, ldroCfg, 3, 1)
 
    def setHeaderType(self, headerType: int):
       self._headerType = headerType
       headerTypeCfg = xc.HEADER_EXPLICIT
       if headerType == xc.HEADER_IMPLICIT:
          headerTypeCfg = xc.HEADER_IMPLICIT
-      self.regs.writeBits(self.regs.REG_MODEM_CONFIG_1, headerTypeCfg, 0, 1)
+      self.regs.set_bits(self.regs.REG_MODEM_CONFIG_1, headerTypeCfg, 0, 1)
 
    def setPreambleLength(self, preambleLength: int):
-      self.regs.writeS(self.regs.REG_PREAMBLE_MSB, (preambleLength >> 8) & 0xFF)
-      self.regs.writeS(self.regs.REG_PREAMBLE_LSB, preambleLength & 0xFF)
+      self.regs.set_reg(self.regs.REG_PREAMBLE_MSB, (preambleLength >> 8) & 0xFF)
+      self.regs.set_reg(self.regs.REG_PREAMBLE_LSB, preambleLength & 0xFF)
 
    def setPayloadLength(self, payloadLength: int):
       self._payloadLength = payloadLength
-      self.regs.writeS(self.regs.REG_PAYLOAD_LENGTH, payloadLength)
+      self.regs.set_reg(self.regs.REG_PAYLOAD_LENGTH, payloadLength)
 
    # keep compatibility between 1 and 2 bytes synchronize word
    def setSyncWord(self, syncWord: int):
       sw = syncWord
       if syncWord > 0xFF:
          sw = ((syncWord >> 8) & 0xF0) | (syncWord & 0x0F)
-      self.regs.writeS(self.regs.REG_SYNC_WORD, sw)
+      self.regs.set_reg(self.regs.REG_SYNC_WORD, sw)
+
+   def standby(self):
+      self.regs.set_reg(sx127xRegEnum.REG_OP_MODE, self._modem | xc.MODE_STDBY)
+      time.sleep(0.002)
+      reg_val: int = self.regs.get_reg(sx127xRegEnum.REG_OP_MODE)
+      utils.trace_dbg(sx127xRegEnum(reg_val).name)

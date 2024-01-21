@@ -50,8 +50,7 @@ class sxOps(object):
          if not callable(f):
             continue
          f: callable = f
-         msg: str = colored(f"\tname: {f.__name__}")
-         print(msg)
+         print(colored(f"\tname: {f.__name__}"))
 
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
    # --- GETs / READs --- #
