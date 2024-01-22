@@ -219,4 +219,4 @@ class sx127xConfOps(object):
       self.regs.set_reg(sx127xRegEnum.REG_OP_MODE, self._modem | xc.MODE_STDBY)
       time.sleep(0.002)
       reg_val: int = self.regs.get_reg(sx127xRegEnum.REG_OP_MODE)
-      utils.trace_dbg(sx127xRegEnum(reg_val).name)
+      utils.trace_dbg(f"reg_val: {sx127xRegEnum(reg_val).name}")
