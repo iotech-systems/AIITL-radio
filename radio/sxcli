@@ -69,7 +69,7 @@ class sxOps(object):
       return True
 
    def get_spi_info(self, tks: [] = None):
-      b_id, b_dev = self.bus_id_dev_hz
+      b_id, b_dev, b_hz = self.bus_id_dev_hz
       print(os.popen(f"spi-config -d /dev/spidev{b_id}.{b_dev} -q").read())
 
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -216,7 +216,7 @@ class cli(object):
       # -- run command --
       if self.sxops in [t.Any, None]:
          self.sxops = sxOps(spi=self.spidev, rst_pin=self.rst_pin, cs_pin=self.cs_pin)
-         self.sxops.bus_id_dev_hz = (self.bus_id, self.bus_dev)
+         self.sxops.bus_id_dev_hz = (self.bus_id, self.bus_dev, self.bus_hz)
       print(colored(f">> {buff} <<", color=TCOLORS.green.name))
       self.sxops.run(tokens=toks)
 
