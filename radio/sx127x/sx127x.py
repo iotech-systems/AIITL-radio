@@ -281,8 +281,8 @@ class sx127x(sxBase):
 
    def cs_on_open_spi(self):
       self.cs_pin.on()
-      self.spidev.open(self.bus_id, self.bus_dev)
-      self.spidev.max_speed_hz = self.bus
+      self.spidev.open(int(self.bus_id), int(self.bus_dev))
+      self.spidev.max_speed_hz = int(self.bus_hz)
 
    def cs_off_close_spi(self):
       self.spidev.close()
