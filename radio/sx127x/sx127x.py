@@ -26,11 +26,11 @@ GPIO.setmode(GPIO.BCM)
 class sx127x(sxBase):
 
    def __init__(self, chip_id: str, spi: sd.SpiDev
-         , spiinfo: (int, int), rst_pin: int, cs_pin: int):
+         , spiinfo: (int, int, int), rst_pin: int, cs_pin: int):
       # -- -- -- --
       self.chip_id: str = chip_id
       self.spidev: sd.SpiDev = spi
-      self.bus_id, self.bus_dev = spiinfo
+      self.bus_id, self.bus_dev, self.bus_hz = [int(v) for v in spiinfo]
       self.rst_pin: pinX = pinX("RST_PIN", rst_pin, GPIO.OUT)
       self.rst_pin.init()
       self.cs_pin: pinX = pinX("CS_PIN", cs_pin, GPIO.OUT)
@@ -57,9 +57,9 @@ class sx127x(sxBase):
       # _dio = 1
       # _cr = 5
       # _ldro = False
-      # _headerType = HEADER_EXPLICIT
-      # _preambleLength = 12
-      # _payloadLength = 32
+      self._headerType = xc.HEADER_EXPLICIT
+      self._preambleLength = 12
+      self._payloadLength = 32
       # _crcType = False
       # _invertIq = False
       # # Operation properties
@@ -282,6 +282,7 @@ class sx127x(sxBase):
    def cs_on_open_spi(self):
       self.cs_pin.on()
       self.spidev.open(self.bus_id, self.bus_dev)
+      self.spidev.max_speed_hz = self.bus
 
    def cs_off_close_spi(self):
       self.spidev.close()

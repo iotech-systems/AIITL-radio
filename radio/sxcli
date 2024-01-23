@@ -22,12 +22,12 @@ class sxOps(object):
       self.sxchip: sx127x = t.Any
       self.rst_pin: int = rst_pin
       self.cs_pin: int = cs_pin
-      self.bus_id_dev: () = (0, 0)
+      self.bus_id_dev_hz: () = (0, 0, 488000)
       self.cli_calls: [] = []
 
    def init(self) -> bool:
       self.sxchip = sx127x("CLIv0", self.spidev
-         , spiinfo=self.bus_id_dev, rst_pin=self.rst_pin, cs_pin=self.cs_pin)
+         , spiinfo=self.bus_id_dev_hz, rst_pin=self.rst_pin, cs_pin=self.cs_pin)
       self.sxchip.init()
       self.sxchip.reset()
       # -- load cli_calls --
@@ -69,7 +69,7 @@ class sxOps(object):
       return True
 
    def get_spi_info(self, tks: [] = None):
-      b_id, b_dev = self.bus_id_dev
+      b_id, b_dev = self.bus_id_dev_hz
       print(os.popen(f"spi-config -d /dev/spidev{b_id}.{b_dev} -q").read())
 
    # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -87,9 +87,9 @@ class sxOps(object):
       print(os.popen(f"spi-config -d /dev/spidev{b_id}.{b_dev} -q").read())
       self.spidev.open(b_id, b_dev)
       self.spidev.max_speed_hz = b_hz
-      self.spidev.close()
       print("[ POST ]")
       print(os.popen(f"spi-config -d /dev/spidev{b_id}.{b_dev} -q").read())
+      self.spidev.close()
       self.sxchip.spidev = self.spidev
 
    def set_freq(self, tks: []):
@@ -193,9 +193,9 @@ class cli(object):
          self.spidev = sp.SpiDev()
          self.spidev.open(self.bus_id, self.bus_dev)
          self.spidev.max_speed_hz = self.bus_hz
-         self.spidev.close()
          _cmd: str = f"spi-config -d /dev/spidev{self.bus_id}.{self.bus_dev} -q"
          print(os.popen(_cmd).read())
+         self.spidev.close()
          return True
       except Exception as e:
          print(e)
@@ -216,7 +216,7 @@ class cli(object):
       # -- run command --
       if self.sxops in [t.Any, None]:
          self.sxops = sxOps(spi=self.spidev, rst_pin=self.rst_pin, cs_pin=self.cs_pin)
-         self.sxops.bus_id_dev = (self.bus_id, self.bus_dev)
+         self.sxops.bus_id_dev_hz = (self.bus_id, self.bus_dev)
       print(colored(f">> {buff} <<", color=TCOLORS.green.name))
       self.sxops.run(tokens=toks)
 
